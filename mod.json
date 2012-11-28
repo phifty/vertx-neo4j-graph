@@ -1,0 +1,4 @@
+{
+  "main": "org.vertx.java.busmods.Neo4jGraphModule",
+  "auto-redeploy": true
+}
