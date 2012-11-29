@@ -1,11 +1,8 @@
 package me.phifty.graph.neo4j;
 
 import me.phifty.graph.Handler;
-import me.phifty.graph.Nodes;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.graphdb.Transaction;
+import me.phifty.graph.Relationships;
+import org.neo4j.graphdb.*;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.HashMap;
@@ -14,22 +11,29 @@ import java.util.Map;
 /**
  * @author phifty <b.phifty@gmail.com>
  */
-public class Neo4jNodes implements Nodes {
+public class Neo4jRelationships implements Relationships {
 
   private GraphDatabaseService graphDatabaseService;
 
-  public Neo4jNodes(GraphDatabaseService graphDatabaseService) {
+  private Map<String, RelationshipType> relationshipTypeCache = new HashMap<>();
+
+  public Neo4jRelationships(GraphDatabaseService graphDatabaseService) {
     this.graphDatabaseService = graphDatabaseService;
   }
 
   @Override
-  public void create(Map<String, Object> properties, Handler<Long> handler) {
+  public void create(long fromId, long toId, String name, Map<String, Object> properties, Handler<Long> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Node node = graphDatabaseService.createNode();
-      PropertyHandler.setProperties(node, properties);
+      Node fromNode = graphDatabaseService.getNodeById(fromId);
+      Node toNode = graphDatabaseService.getNodeById(toId);
+      RelationshipType relationshipType = getRelationshipTypeFor(name);
+
+      Relationship relationship = fromNode.createRelationshipTo(toNode, relationshipType);
+      PropertyHandler.setProperties(relationship, properties);
       transaction.success();
-      handler.handle(node.getId());
+
+      handler.handle(relationship.getId());
     } catch (Exception exception) {
       transaction.failure();
       handler.exception(exception);
@@ -42,9 +46,11 @@ public class Neo4jNodes implements Nodes {
   public void update(long id, Map<String, Object> properties, Handler<Boolean> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Node node = graphDatabaseService.getNodeById(id);
-      PropertyHandler.setProperties(node, properties);
+      Relationship relationship = graphDatabaseService.getRelationshipById(id);
+
+      PropertyHandler.setProperties(relationship, properties);
       transaction.success();
+
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
@@ -57,12 +63,10 @@ public class Neo4jNodes implements Nodes {
   @Override
   public void fetch(long id, Handler<Map<String, Object>> handler) {
     try {
-      Node node = graphDatabaseService.getNodeById(id);
-      handler.handle(PropertyHandler.getProperties(node));
+      Relationship relationship = graphDatabaseService.getRelationshipById(id);
+      handler.handle(PropertyHandler.getProperties(relationship));
     } catch (NotFoundException exception) {
       handler.handle(null);
-    } catch (Exception exception) {
-      handler.exception(exception);
     }
   }
 
@@ -70,9 +74,10 @@ public class Neo4jNodes implements Nodes {
   public void remove(long id, Handler<Boolean> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Node node = graphDatabaseService.getNodeById(id);
-      node.delete();
+      Relationship relationship = graphDatabaseService.getRelationshipById(id);
+      relationship.delete();
       transaction.success();
+
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
@@ -87,10 +92,11 @@ public class Neo4jNodes implements Nodes {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(graphDatabaseService);
-      for (Node node : globalGraphOperations.getAllNodes()) {
-        node.delete();
+      for (Relationship relationship : globalGraphOperations.getAllRelationships()) {
+        relationship.delete();
       }
       transaction.success();
+
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
@@ -98,6 +104,31 @@ public class Neo4jNodes implements Nodes {
     } finally {
       transaction.finish();
     }
+  }
+
+  private RelationshipType getRelationshipTypeFor(String name) {
+    if (relationshipTypeCache.containsKey(name)) {
+      return relationshipTypeCache.get(name);
+    } else {
+      RelationshipType relationshipType = new DynamicRelationshipType(name);
+      relationshipTypeCache.put(name, relationshipType);
+      return relationshipType;
+    }
+  }
+
+  private class DynamicRelationshipType implements RelationshipType {
+
+    private String name;
+
+    DynamicRelationshipType(String name) {
+      this.name = name;
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
+
   }
 
 }

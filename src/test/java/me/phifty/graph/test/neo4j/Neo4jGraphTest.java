@@ -19,6 +19,7 @@ public class Neo4jGraphTest {
   private FakeHandler<Long> idHandler = new FakeHandler<>();
   private FakeHandler<Boolean> doneHandler = new FakeHandler<>();
   private FakeHandler<Map<String, Object>> nodeHandler = new FakeHandler<>();
+  private FakeHandler<Map<String, Object>> relationshipHandler = new FakeHandler<>();
   private Graph graph;
 
   @Before
@@ -74,18 +75,71 @@ public class Neo4jGraphTest {
   }
 
   @Test
+  public void testCreateRelationship() {
+    long fromId = addTestNode();
+    long toId = addTestNode();
+
+    graph.relationships().create(fromId, toId, "connected", testRelationship(), idHandler);
+    Assert.assertTrue(idHandler.getValue() >= 0);
+
+    graph.relationships().fetch(idHandler.getValue(), relationshipHandler);
+    assertTestRelationship(relationshipHandler.getValue());
+  }
+
+  @Test
+  public void testUpdateRelationship() {
+    long id = addTestRelationship();
+
+    graph.relationships().update(id, updatedTestRelationship(), doneHandler);
+    Assert.assertTrue(doneHandler.getValue());
+
+    graph.relationships().fetch(id, relationshipHandler);
+    assertUpdatedTestRelationship(relationshipHandler.getValue());
+  }
+
+  @Test
+  public void testFetchRelationship() {
+    long id = addTestRelationship();
+
+    graph.relationships().fetch(id, relationshipHandler);
+    assertTestRelationship(relationshipHandler.getValue());
+  }
+
+  @Test
+  public void testRemoveRelationship() {
+    long id = addTestRelationship();
+
+    graph.relationships().remove(id, doneHandler);
+    Assert.assertTrue(doneHandler.getValue());
+
+    graph.relationships().fetch(id, relationshipHandler);
+    Assert.assertNull(relationshipHandler.getValue());
+  }
+
+  @Test
   public void testClear() {
-    long id = addTestNode();
+    long nodeId = addTestNode();
+    long relationshipId = addTestRelationship();
 
     graph.clear(doneHandler);
     Assert.assertTrue(doneHandler.getValue());
 
-    graph.nodes().fetch(id, nodeHandler);
+    graph.nodes().fetch(nodeId, nodeHandler);
     Assert.assertNull(nodeHandler.getValue());
+
+    graph.relationships().fetch(relationshipId, relationshipHandler);
+    Assert.assertNull(relationshipHandler.getValue());
   }
 
   private long addTestNode() {
     graph.nodes().create(testNode(), idHandler);
+    return idHandler.getValue();
+  }
+
+  private long addTestRelationship() {
+    long fromId = addTestNode();
+    long toId = addTestNode();
+    graph.relationships().create(fromId, toId, "connected", testRelationship(), idHandler);
     return idHandler.getValue();
   }
 
@@ -97,6 +151,14 @@ public class Neo4jGraphTest {
     Assert.assertEquals("updated test node", properties.get("content"));
   }
 
+  private void assertTestRelationship(Map<String, Object> properties) {
+    Assert.assertEquals("test relationship", properties.get("content"));
+  }
+
+  private void assertUpdatedTestRelationship(Map<String, Object> properties) {
+    Assert.assertEquals("updated test relationship", properties.get("content"));
+  }
+
   private Map<String, Object> testNode() {
     Map<String, Object> result = new HashMap<>();
     result.put("content", "test node");
@@ -106,6 +168,18 @@ public class Neo4jGraphTest {
   private Map<String, Object> updatedTestNode() {
     Map<String, Object> result = new HashMap<>();
     result.put("content", "updated test node");
+    return result;
+  }
+
+  private Map<String, Object> testRelationship() {
+    Map<String, Object> result = new HashMap<>();
+    result.put("content", "test relationship");
+    return result;
+  }
+
+  private Map<String, Object> updatedTestRelationship() {
+    Map<String, Object> result = new HashMap<>();
+    result.put("content", "updated test relationship");
     return result;
   }
 

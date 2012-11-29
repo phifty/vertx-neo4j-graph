@@ -12,6 +12,7 @@ import org.vertx.java.framework.TestClientBase;
 public class Neo4jGraphTestClient extends TestClientBase {
 
   private long testNodeId;
+  private long testRelationshipId;
 
   @Override
   public void start() {
@@ -30,10 +31,15 @@ public class Neo4jGraphTestClient extends TestClientBase {
   }
 
   public void testCreateNode() {
-    vertx.eventBus().send("test.neo4j-graph.nodes.store", generateCreateNodeMessage("test node"), new Handler<Message<JsonObject>>() {
+    vertx.eventBus().send(
+      "test.neo4j-graph.nodes.store",
+      generateCreateNodeMessage("test node"),
+      new Handler<Message<JsonObject>>() {
+
       @Override
       public void handle(Message<JsonObject> message) {
         checkForException(message);
+        testNodeId = message.body.getLong("id");
         fetchTestNode(new Handler<String>() {
           @Override
           public void handle(String content) {
@@ -54,10 +60,14 @@ public class Neo4jGraphTestClient extends TestClientBase {
   }
 
   public void testUpdateNode() {
-    addTestNode(new Handler<Long>() {
+    addTestNode("test node", new Handler<Long>() {
       @Override
       public void handle(Long id) {
-        vertx.eventBus().send("test.neo4j-graph.nodes.store", generateUpdateNodeMessage(id, "updated test node"), new Handler<Message<JsonObject>>() {
+        vertx.eventBus().send(
+          "test.neo4j-graph.nodes.store",
+          generateUpdateNodeMessage(id, "updated test node"),
+          new Handler<Message<JsonObject>>() {
+
           @Override
           public void handle(Message<JsonObject> message) {
             checkForException(message);
@@ -65,7 +75,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
               @Override
               public void handle(String content) {
                 try {
-                  tu.azzert("updated test node".equals(content), "should store the right node");
+                  tu.azzert("updated test node".equals(content), "should update the right node");
                 } finally {
                   clearAll(new Handler<Boolean>() {
                     @Override
@@ -83,10 +93,10 @@ public class Neo4jGraphTestClient extends TestClientBase {
   }
 
   public void testFetchNode() {
-    addTestNode(new Handler<Long>() {
+    addTestNode("test node", new Handler<Long>() {
       @Override
       public void handle(Long id) {
-        vertx.eventBus().send("test.neo4j-graph.nodes.fetch", generateFetchNodeMessage(id), new Handler<Message<JsonObject>>() {
+        vertx.eventBus().send("test.neo4j-graph.nodes.fetch", generateIdMessage(id), new Handler<Message<JsonObject>>() {
           @Override
           public void handle(Message<JsonObject> message) {
             try {
@@ -107,10 +117,10 @@ public class Neo4jGraphTestClient extends TestClientBase {
   }
 
   public void testRemoveNode() {
-    addTestNode(new Handler<Long>() {
+    addTestNode("test node", new Handler<Long>() {
       @Override
       public void handle(Long id) {
-        vertx.eventBus().send("test.neo4j-graph.nodes.remove", generateRemoveNodeMessage(id), new Handler<Message<JsonObject>>() {
+        vertx.eventBus().send("test.neo4j-graph.nodes.remove", generateIdMessage(id), new Handler<Message<JsonObject>>() {
           @Override
           public void handle(Message<JsonObject> message) {
             fetchTestNode(new Handler<String>() {
@@ -129,22 +139,166 @@ public class Neo4jGraphTestClient extends TestClientBase {
     });
   }
 
-  public void testClear() {
-    addTestNode(new Handler<Long>() {
+  public void testCreateRelationship() {
+    addTestNode("test node one", new Handler<Long>() {
+      @Override
+      public void handle(final Long idOne) {
+        addTestNode("test node two", new Handler<Long>() {
+          @Override
+          public void handle(final Long idTwo) {
+            vertx.eventBus().send(
+              "test.neo4j-graph.relationships.store",
+              generateCreateRelationshipMessage(idOne, idTwo, "test relationship"),
+              new Handler<Message<JsonObject>>() {
+
+              @Override
+              public void handle(Message<JsonObject> message) {
+                checkForException(message);
+                testRelationshipId = message.body.getLong("id");
+                fetchTestRelationship(new Handler<String>() {
+                  @Override
+                  public void handle(String content) {
+                    try {
+                      tu.azzert("test relationship".equals(content), "should store the right relationship");
+                    } finally {
+                      clearAll(new Handler<Boolean>() {
+                        @Override
+                        public void handle(Boolean done) {
+                          tu.testComplete();
+                        }
+                      });
+                    }
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  public void testUpdateRelationship() {
+    addTestRelationship("test relationship", new Handler<Long>() {
       @Override
       public void handle(Long id) {
-        vertx.eventBus().send("test.neo4j-graph.clear", null, new Handler<Message<JsonObject>>() {
-          @Override
-          public void handle(Message<JsonObject> message) {
-            checkForException(message);
-            fetchTestNode(new Handler<String>() {
-              @Override
-              public void handle(String content) {
-                try {
-                  tu.azzert(content == null, "should clear all data");
-                } finally {
-                  tu.testComplete();
+        vertx.eventBus().send(
+          "test.neo4j-graph.relationships.store",
+          generateUpdateRelationshipMessage(id, "updated test relationship"),
+          new Handler<Message<JsonObject>>() {
+
+            @Override
+            public void handle(Message<JsonObject> message) {
+              checkForException(message);
+              fetchTestRelationship(new Handler<String>() {
+                @Override
+                public void handle(String content) {
+                  try {
+                    tu.azzert("updated test relationship".equals(content), "should store the right relationship");
+                  } finally {
+                    clearAll(new Handler<Boolean>() {
+                      @Override
+                      public void handle(Boolean done) {
+                        tu.testComplete();
+                      }
+                    });
+                  }
                 }
+              });
+            }
+          });
+
+      }
+    });
+  }
+
+  public void testFetchRelationship() {
+    addTestRelationship("test relationship", new Handler<Long>() {
+      @Override
+      public void handle(Long id) {
+        vertx.eventBus().send(
+          "test.neo4j-graph.relationships.fetch",
+          generateIdMessage(id),
+          new Handler<Message<JsonObject>>() {
+
+            @Override
+            public void handle(Message<JsonObject> message) {
+              checkForException(message);
+              try {
+                tu.azzert("test relationship".equals(message.body.getString("content")), "should respond the right relationship");
+              } finally {
+                clearAll(new Handler<Boolean>() {
+                  @Override
+                  public void handle(Boolean done) {
+                    tu.testComplete();
+                  }
+                });
+              }
+            }
+          });
+      }
+    });
+  }
+
+  public void testRemoveRelationship() {
+    addTestRelationship("test relationship", new Handler<Long>() {
+      @Override
+      public void handle(Long id) {
+        vertx.eventBus().send(
+          "test.neo4j-graph.relationships.remove",
+          generateIdMessage(id),
+          new Handler<Message<JsonObject>>() {
+
+            @Override
+            public void handle(Message<JsonObject> message) {
+              checkForException(message);
+              fetchTestRelationship(new Handler<String>() {
+                @Override
+                public void handle(String content) {
+                  try {
+                    tu.azzert(content == null, "should remove the right relationship");
+                  } finally {
+                    clearAll(new Handler<Boolean>() {
+                      @Override
+                      public void handle(Boolean done) {
+                        tu.testComplete();
+                      }
+                    });
+                  }
+                }
+              });
+            }
+          });
+      }
+    });
+  }
+
+  public void testClear() {
+    addTestNode("test node", new Handler<Long>() {
+      @Override
+      public void handle(final Long nodeId) {
+        addTestRelationship("test relationship", new Handler<Long>() {
+          @Override
+          public void handle(final Long relationshipId) {
+            vertx.eventBus().send("test.neo4j-graph.clear", null, new Handler<Message<JsonObject>>() {
+              @Override
+              public void handle(Message<JsonObject> message) {
+                checkForException(message);
+                fetchTestNode(new Handler<String>() {
+                  @Override
+                  public void handle(final String nodeContent) {
+                    fetchTestRelationship(new Handler<String>() {
+                      @Override
+                      public void handle(final String relationshipContent) {
+                        try {
+                          tu.azzert(nodeContent == null && relationshipContent == null, "should clear all nodes and relationships");
+                        } finally {
+                          tu.testComplete();
+                        }
+                      }
+                    });
+                  }
+                });
               }
             });
           }
@@ -159,8 +313,8 @@ public class Neo4jGraphTestClient extends TestClientBase {
     }
   }
 
-  private void addTestNode(final Handler<Long> handler) {
-    vertx.eventBus().send("test.neo4j-graph.nodes.store", generateCreateNodeMessage("test node"), new Handler<Message<JsonObject>>() {
+  private void addTestNode(String content, final Handler<Long> handler) {
+    vertx.eventBus().send("test.neo4j-graph.nodes.store", generateCreateNodeMessage(content), new Handler<Message<JsonObject>>() {
       @Override
       public void handle(Message<JsonObject> message) {
         testNodeId = message.body.getLong("id");
@@ -170,7 +324,44 @@ public class Neo4jGraphTestClient extends TestClientBase {
   }
 
   private void fetchTestNode(final Handler<String> handler) {
-    vertx.eventBus().send("test.neo4j-graph.nodes.fetch", generateFetchNodeMessage(testNodeId), new Handler<Message<JsonObject>>() {
+    vertx.eventBus().send("test.neo4j-graph.nodes.fetch", generateIdMessage(testNodeId), new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(Message<JsonObject> message) {
+        handler.handle(message.body == null ? null : message.body.getString("content"));
+      }
+    });
+  }
+
+  private void addTestRelationship(final String content, final Handler<Long> handler) {
+    addTestNode("test node one", new Handler<Long>() {
+      @Override
+      public void handle(final Long idOne) {
+        addTestNode("test node two", new Handler<Long>() {
+          @Override
+          public void handle(final Long idTwo) {
+            vertx.eventBus().send(
+              "test.neo4j-graph.relationships.store",
+              generateCreateRelationshipMessage(idOne, idTwo, content),
+              new Handler<Message<JsonObject>>() {
+
+              @Override
+              public void handle(Message<JsonObject> message) {
+                testRelationshipId = message.body.getLong("id");
+                handler.handle(testRelationshipId);
+              }
+            });
+          }
+        });
+      }
+    });
+  }
+
+  private void fetchTestRelationship(final Handler<String> handler) {
+    vertx.eventBus().send(
+      "test.neo4j-graph.relationships.fetch",
+      generateIdMessage(testRelationshipId),
+      new Handler<Message<JsonObject>>() {
+
       @Override
       public void handle(Message<JsonObject> message) {
         handler.handle(message.body == null ? null : message.body.getString("content"));
@@ -191,32 +382,58 @@ public class Neo4jGraphTestClient extends TestClientBase {
     });
   }
 
+  private JsonObject generateIdMessage(long id) {
+    JsonObject message = new JsonObject();
+    message.putNumber("id", id);
+    return message;
+  }
+
   private JsonObject generateCreateNodeMessage(String content) {
     JsonObject message = new JsonObject();
+
     JsonObject properties = new JsonObject();
     properties.putString("content", content);
+
     message.putObject("properties", properties);
+
     return message;
   }
 
   private JsonObject generateUpdateNodeMessage(long id, String content) {
     JsonObject message = new JsonObject();
+
     JsonObject properties = new JsonObject();
     properties.putString("content", content);
+
     message.putNumber("id", id);
     message.putObject("properties", properties);
+
     return message;
   }
 
-  private JsonObject generateFetchNodeMessage(long id) {
+  private JsonObject generateCreateRelationshipMessage(long fromId, long toId, String content) {
     JsonObject message = new JsonObject();
-    message.putNumber("id", id);
+
+    JsonObject properties = new JsonObject();
+    properties.putString("content", content);
+
+    message.putNumber("from", fromId);
+    message.putNumber("to", toId);
+    message.putString("name", "connected");
+    message.putObject("properties", properties);
+
     return message;
   }
 
-  private JsonObject generateRemoveNodeMessage(long id) {
+  private JsonObject generateUpdateRelationshipMessage(long id, String content) {
     JsonObject message = new JsonObject();
+
+    JsonObject properties = new JsonObject();
+    properties.putString("content", content);
+
     message.putNumber("id", id);
+    message.putObject("properties", properties);
+
     return message;
   }
 

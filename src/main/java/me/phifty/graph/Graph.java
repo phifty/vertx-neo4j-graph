@@ -9,6 +9,8 @@ public interface Graph {
 
   public Nodes nodes();
 
+  public Relationships relationships();
+
   public void clear(Handler<Boolean> handler);
 
   public void shutdown();

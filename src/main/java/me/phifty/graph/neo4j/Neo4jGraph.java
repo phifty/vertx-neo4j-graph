@@ -3,14 +3,8 @@ package me.phifty.graph.neo4j;
 import me.phifty.graph.Graph;
 import me.phifty.graph.Handler;
 import me.phifty.graph.Nodes;
+import me.phifty.graph.Relationships;
 import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.NotFoundException;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.tooling.GlobalGraphOperations;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author phifty <b.phifty@gmail.com>
@@ -19,6 +13,7 @@ public class Neo4jGraph implements Graph {
 
   private GraphDatabaseService graphDatabaseService;
   private Nodes nodes;
+  private Relationships relationships;
 
   public Neo4jGraph(String path) {
     this(path, new Neo4jGraphDatabaseServiceFactory());
@@ -28,6 +23,7 @@ public class Neo4jGraph implements Graph {
     graphDatabaseService = graphDatabaseServiceFactory.create(path);
 
     nodes = new Neo4jNodes(graphDatabaseService);
+    relationships = new Neo4jRelationships(graphDatabaseService);
   }
 
   @Override
@@ -36,8 +32,33 @@ public class Neo4jGraph implements Graph {
   }
 
   @Override
-  public void clear(Handler<Boolean> handler) {
-    nodes().clear(handler);
+  public Relationships relationships() {
+    return relationships;
+  }
+
+  @Override
+  public void clear(final Handler<Boolean> handler) {
+    relationships().clear(new Handler<Boolean>() {
+      @Override
+      public void handle(final Boolean relationshipsDeleted) {
+        nodes().clear(new Handler<Boolean>() {
+          @Override
+          public void handle(Boolean nodesDeleted) {
+            handler.handle(nodesDeleted && relationshipsDeleted);
+          }
+
+          @Override
+          public void exception(Exception exception) {
+            handler.exception(exception);
+          }
+        });
+      }
+
+      @Override
+      public void exception(Exception exception) {
+        handler.exception(exception);
+      }
+    });
   }
 
   @Override

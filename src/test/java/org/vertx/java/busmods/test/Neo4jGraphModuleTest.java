@@ -26,6 +26,22 @@ public class Neo4jGraphModuleTest extends TestBase {
     startTest(getMethodName());
   }
 
+  public void testCreateRelationship() {
+    startTest(getMethodName());
+  }
+
+  public void testUpdateRelationship() {
+    startTest(getMethodName());
+  }
+
+  public void testFetchRelationship() {
+    startTest(getMethodName());
+  }
+
+  public void testRemoveRelationship() {
+    startTest(getMethodName());
+  }
+
   public void testClear() {
     startTest(getMethodName());
   }
