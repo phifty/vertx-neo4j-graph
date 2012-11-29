@@ -51,7 +51,7 @@ public class Neo4jGraphModule extends Verticle {
           long id = Long.parseLong(body.get("id").toString());
 
           try {
-            database.updateNode(id, properties, new me.phifty.graph.Handler<Boolean>() {
+            database.nodes().update(id, properties, new me.phifty.graph.Handler<Boolean>() {
               @Override
               public void handle(Boolean value) {
                 message.reply(doneMessage(true));
@@ -67,7 +67,7 @@ public class Neo4jGraphModule extends Verticle {
           }
         } else {
           try {
-            database.createNode(properties, new me.phifty.graph.Handler<Long>() {
+            database.nodes().create(properties, new me.phifty.graph.Handler<Long>() {
               @Override
               public void handle(Long id) {
                 message.reply(idMessage(id));
@@ -94,7 +94,7 @@ public class Neo4jGraphModule extends Verticle {
         long id = message.body.getLong("id");
 
         try {
-          database.fetchNode(id, new me.phifty.graph.Handler<Map<String, Object>>() {
+          database.nodes().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
             @Override
             public void handle(Map<String, Object> node) {
               message.reply(node == null ? null : nodeMessage(node));
@@ -119,7 +119,7 @@ public class Neo4jGraphModule extends Verticle {
         long id = message.body.getLong("id");
 
         try {
-          database.removeNode(id, new me.phifty.graph.Handler<Boolean>() {
+          database.nodes().remove(id, new me.phifty.graph.Handler<Boolean>() {
             @Override
             public void handle(Boolean value) {
               message.reply(doneMessage(true));
@@ -173,15 +173,7 @@ public class Neo4jGraphModule extends Verticle {
   }
 
   private JsonObject nodeMessage(Map<String, Object> properties) {
-    JsonObject message = new JsonObject();
-    for (Map.Entry<String, Object> property : properties.entrySet()) {
-      if (property.getValue() instanceof String) {
-        message.putString(property.getKey(), (String)property.getValue());
-      } else if (property.getValue() instanceof Number) {
-        message.putNumber(property.getKey(), (Number)property.getValue());
-      }
-    }
-    return message;
+    return new JsonObject(properties);
   }
 
   private JsonObject failMessage(Exception exception) {

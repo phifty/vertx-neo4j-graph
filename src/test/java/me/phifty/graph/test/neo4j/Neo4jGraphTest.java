@@ -36,10 +36,10 @@ public class Neo4jGraphTest {
 
   @Test
   public void testCreateNode() {
-    graph.createNode(testNode(), idHandler);
+    graph.nodes().create(testNode(), idHandler);
     Assert.assertTrue(idHandler.getValue() > 0);
 
-    graph.fetchNode(idHandler.getValue(), nodeHandler);
+    graph.nodes().fetch(idHandler.getValue(), nodeHandler);
     assertTestNode(nodeHandler.getValue());
   }
 
@@ -47,10 +47,10 @@ public class Neo4jGraphTest {
   public void testUpdateNode() {
     long id = addTestNode();
 
-    graph.updateNode(id, updatedTestNode(), doneHandler);
+    graph.nodes().update(id, updatedTestNode(), doneHandler);
     Assert.assertTrue(doneHandler.getValue());
 
-    graph.fetchNode(id, nodeHandler);
+    graph.nodes().fetch(id, nodeHandler);
     assertUpdatedTestNode(nodeHandler.getValue());
   }
 
@@ -58,7 +58,7 @@ public class Neo4jGraphTest {
   public void testFetchNode() {
     long id = addTestNode();
 
-    graph.fetchNode(id, nodeHandler);
+    graph.nodes().fetch(id, nodeHandler);
     assertTestNode(nodeHandler.getValue());
   }
 
@@ -66,10 +66,10 @@ public class Neo4jGraphTest {
   public void testRemoveNode() {
     long id = addTestNode();
 
-    graph.removeNode(id, doneHandler);
+    graph.nodes().remove(id, doneHandler);
     Assert.assertTrue(doneHandler.getValue());
 
-    graph.fetchNode(id, nodeHandler);
+    graph.nodes().fetch(id, nodeHandler);
     Assert.assertNull(nodeHandler.getValue());
   }
 
@@ -80,12 +80,12 @@ public class Neo4jGraphTest {
     graph.clear(doneHandler);
     Assert.assertTrue(doneHandler.getValue());
 
-    graph.fetchNode(id, nodeHandler);
+    graph.nodes().fetch(id, nodeHandler);
     Assert.assertNull(nodeHandler.getValue());
   }
 
   private long addTestNode() {
-    graph.createNode(testNode(), idHandler);
+    graph.nodes().create(testNode(), idHandler);
     return idHandler.getValue();
   }
 
