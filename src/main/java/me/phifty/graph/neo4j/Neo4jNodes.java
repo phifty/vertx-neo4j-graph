@@ -1,6 +1,7 @@
 package me.phifty.graph.neo4j;
 
 import me.phifty.graph.Handler;
+import me.phifty.graph.Identifier;
 import me.phifty.graph.Nodes;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -8,7 +9,6 @@ import org.neo4j.graphdb.NotFoundException;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -23,13 +23,13 @@ public class Neo4jNodes implements Nodes {
   }
 
   @Override
-  public void create(Map<String, Object> properties, Handler<Long> handler) {
+  public void create(Map<String, Object> properties, Handler<Identifier> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Node node = graphDatabaseService.createNode();
       PropertyHandler.setProperties(node, properties);
       transaction.success();
-      handler.handle(node.getId());
+      handler.handle(new Identifier(node.getId()));
     } catch (Exception exception) {
       transaction.failure();
       handler.exception(exception);
@@ -39,10 +39,10 @@ public class Neo4jNodes implements Nodes {
   }
 
   @Override
-  public void update(long id, Map<String, Object> properties, Handler<Boolean> handler) {
+  public void update(Identifier id, Map<String, Object> properties, Handler<Boolean> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Node node = graphDatabaseService.getNodeById(id);
+      Node node = getNode(id);
       PropertyHandler.setProperties(node, properties);
       transaction.success();
       handler.handle(true);
@@ -55,9 +55,9 @@ public class Neo4jNodes implements Nodes {
   }
 
   @Override
-  public void fetch(long id, Handler<Map<String, Object>> handler) {
+  public void fetch(Identifier id, Handler<Map<String, Object>> handler) {
     try {
-      Node node = graphDatabaseService.getNodeById(id);
+      Node node = getNode(id);
       handler.handle(PropertyHandler.getProperties(node));
     } catch (NotFoundException exception) {
       handler.handle(null);
@@ -67,10 +67,10 @@ public class Neo4jNodes implements Nodes {
   }
 
   @Override
-  public void remove(long id, Handler<Boolean> handler) {
+  public void remove(Identifier id, Handler<Boolean> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Node node = graphDatabaseService.getNodeById(id);
+      Node node = getNode(id);
       node.delete();
       transaction.success();
       handler.handle(true);
@@ -98,6 +98,10 @@ public class Neo4jNodes implements Nodes {
     } finally {
       transaction.finish();
     }
+  }
+
+  private Node getNode(Identifier id) {
+    return graphDatabaseService.getNodeById((Long)id.getId());
   }
 
 }

@@ -1,6 +1,7 @@
 package me.phifty.graph.test.neo4j;
 
 import me.phifty.graph.Graph;
+import me.phifty.graph.Identifier;
 import me.phifty.graph.neo4j.Neo4jGraph;
 import me.phifty.graph.test.FakeHandler;
 import org.junit.After;
@@ -16,7 +17,7 @@ import java.util.Map;
  */
 public class Neo4jGraphTest {
 
-  private FakeHandler<Long> idHandler = new FakeHandler<>();
+  private FakeHandler<Identifier> idHandler = new FakeHandler<Identifier>();
   private FakeHandler<Boolean> doneHandler = new FakeHandler<>();
   private FakeHandler<Map<String, Object>> nodeHandler = new FakeHandler<>();
   private FakeHandler<Map<String, Object>> relationshipHandler = new FakeHandler<>();
@@ -38,7 +39,7 @@ public class Neo4jGraphTest {
   @Test
   public void testCreateNode() {
     graph.nodes().create(testNode(), idHandler);
-    Assert.assertTrue(idHandler.getValue() > 0);
+    Assert.assertNotNull(idHandler.getValue().getId());
 
     graph.nodes().fetch(idHandler.getValue(), nodeHandler);
     assertTestNode(nodeHandler.getValue());
@@ -46,7 +47,7 @@ public class Neo4jGraphTest {
 
   @Test
   public void testUpdateNode() {
-    long id = addTestNode();
+    Identifier id = addTestNode();
 
     graph.nodes().update(id, updatedTestNode(), doneHandler);
     Assert.assertTrue(doneHandler.getValue());
@@ -57,7 +58,7 @@ public class Neo4jGraphTest {
 
   @Test
   public void testFetchNode() {
-    long id = addTestNode();
+    Identifier id = addTestNode();
 
     graph.nodes().fetch(id, nodeHandler);
     assertTestNode(nodeHandler.getValue());
@@ -65,7 +66,7 @@ public class Neo4jGraphTest {
 
   @Test
   public void testRemoveNode() {
-    long id = addTestNode();
+    Identifier id = addTestNode();
 
     graph.nodes().remove(id, doneHandler);
     Assert.assertTrue(doneHandler.getValue());
@@ -76,11 +77,11 @@ public class Neo4jGraphTest {
 
   @Test
   public void testCreateRelationship() {
-    long fromId = addTestNode();
-    long toId = addTestNode();
+    Identifier fromId = addTestNode();
+    Identifier toId = addTestNode();
 
     graph.relationships().create(fromId, toId, "connected", testRelationship(), idHandler);
-    Assert.assertTrue(idHandler.getValue() >= 0);
+    Assert.assertNotNull(idHandler.getValue().getId());
 
     graph.relationships().fetch(idHandler.getValue(), relationshipHandler);
     assertTestRelationship(relationshipHandler.getValue());
@@ -88,7 +89,7 @@ public class Neo4jGraphTest {
 
   @Test
   public void testUpdateRelationship() {
-    long id = addTestRelationship();
+    Identifier id = addTestRelationship();
 
     graph.relationships().update(id, updatedTestRelationship(), doneHandler);
     Assert.assertTrue(doneHandler.getValue());
@@ -99,7 +100,7 @@ public class Neo4jGraphTest {
 
   @Test
   public void testFetchRelationship() {
-    long id = addTestRelationship();
+    Identifier id = addTestRelationship();
 
     graph.relationships().fetch(id, relationshipHandler);
     assertTestRelationship(relationshipHandler.getValue());
@@ -107,7 +108,7 @@ public class Neo4jGraphTest {
 
   @Test
   public void testRemoveRelationship() {
-    long id = addTestRelationship();
+    Identifier id = addTestRelationship();
 
     graph.relationships().remove(id, doneHandler);
     Assert.assertTrue(doneHandler.getValue());
@@ -118,8 +119,8 @@ public class Neo4jGraphTest {
 
   @Test
   public void testClear() {
-    long nodeId = addTestNode();
-    long relationshipId = addTestRelationship();
+    Identifier nodeId = addTestNode();
+    Identifier relationshipId = addTestRelationship();
 
     graph.clear(doneHandler);
     Assert.assertTrue(doneHandler.getValue());
@@ -131,14 +132,14 @@ public class Neo4jGraphTest {
     Assert.assertNull(relationshipHandler.getValue());
   }
 
-  private long addTestNode() {
+  private Identifier addTestNode() {
     graph.nodes().create(testNode(), idHandler);
     return idHandler.getValue();
   }
 
-  private long addTestRelationship() {
-    long fromId = addTestNode();
-    long toId = addTestNode();
+  private Identifier addTestRelationship() {
+    Identifier fromId = addTestNode();
+    Identifier toId = addTestNode();
     graph.relationships().create(fromId, toId, "connected", testRelationship(), idHandler);
     return idHandler.getValue();
   }

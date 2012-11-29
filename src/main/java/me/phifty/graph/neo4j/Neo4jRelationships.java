@@ -1,6 +1,7 @@
 package me.phifty.graph.neo4j;
 
 import me.phifty.graph.Handler;
+import me.phifty.graph.Identifier;
 import me.phifty.graph.Relationships;
 import org.neo4j.graphdb.*;
 import org.neo4j.tooling.GlobalGraphOperations;
@@ -22,18 +23,18 @@ public class Neo4jRelationships implements Relationships {
   }
 
   @Override
-  public void create(long fromId, long toId, String name, Map<String, Object> properties, Handler<Long> handler) {
+  public void create(Identifier fromId, Identifier toId, String name, Map<String, Object> properties, Handler<Identifier> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Node fromNode = graphDatabaseService.getNodeById(fromId);
-      Node toNode = graphDatabaseService.getNodeById(toId);
+      Node fromNode = getNode(fromId);
+      Node toNode = getNode(toId);
       RelationshipType relationshipType = getRelationshipTypeFor(name);
 
       Relationship relationship = fromNode.createRelationshipTo(toNode, relationshipType);
       PropertyHandler.setProperties(relationship, properties);
       transaction.success();
 
-      handler.handle(relationship.getId());
+      handler.handle(new Identifier(relationship.getId()));
     } catch (Exception exception) {
       transaction.failure();
       handler.exception(exception);
@@ -43,10 +44,10 @@ public class Neo4jRelationships implements Relationships {
   }
 
   @Override
-  public void update(long id, Map<String, Object> properties, Handler<Boolean> handler) {
+  public void update(Identifier id, Map<String, Object> properties, Handler<Boolean> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Relationship relationship = graphDatabaseService.getRelationshipById(id);
+      Relationship relationship = getRelationship(id);
 
       PropertyHandler.setProperties(relationship, properties);
       transaction.success();
@@ -61,9 +62,9 @@ public class Neo4jRelationships implements Relationships {
   }
 
   @Override
-  public void fetch(long id, Handler<Map<String, Object>> handler) {
+  public void fetch(Identifier id, Handler<Map<String, Object>> handler) {
     try {
-      Relationship relationship = graphDatabaseService.getRelationshipById(id);
+      Relationship relationship = getRelationship(id);
       handler.handle(PropertyHandler.getProperties(relationship));
     } catch (NotFoundException exception) {
       handler.handle(null);
@@ -71,10 +72,10 @@ public class Neo4jRelationships implements Relationships {
   }
 
   @Override
-  public void remove(long id, Handler<Boolean> handler) {
+  public void remove(Identifier id, Handler<Boolean> handler) {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
-      Relationship relationship = graphDatabaseService.getRelationshipById(id);
+      Relationship relationship = getRelationship(id);
       relationship.delete();
       transaction.success();
 
@@ -104,6 +105,14 @@ public class Neo4jRelationships implements Relationships {
     } finally {
       transaction.finish();
     }
+  }
+
+  private Node getNode(Identifier id) {
+    return graphDatabaseService.getNodeById((Long)id.getId());
+  }
+
+  private Relationship getRelationship(Identifier id) {
+    return graphDatabaseService.getRelationshipById((Long) id.getId());
   }
 
   private RelationshipType getRelationshipTypeFor(String name) {
