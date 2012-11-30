@@ -17,9 +17,12 @@ public class Neo4jComplexTest {
 
   private FakeHandler<Object> idHandler = new FakeHandler<>();
   private FakeHandler<Iterable<Object>> idsHandler = new FakeHandler<>();
+  private FakeHandler<Iterable<Map<String, Object>>> nodesHandler = new FakeHandler<>();
   private FakeHandler<Iterable<Map<String, Object>>> relationshipsHandler = new FakeHandler<>();
   private Map<String, Object> properties;
   private Graph graph;
+  private Object fromNodeId;
+  private Object toNodeId;
 
   @Before
   public void setUp() throws Exception {
@@ -33,8 +36,17 @@ public class Neo4jComplexTest {
   public void tearDown() {
     idHandler.reset();
     idsHandler.reset();
+    nodesHandler.reset();
     relationshipsHandler.reset();
     graph.shutdown();
+  }
+
+  @Test
+  public void testFetchAllRelatedNodes() {
+    addTestRelationship();
+
+    graph.complex().fetchAllRelatedNodes(fromNodeId, "connected", "outgoing", nodesHandler);
+    assertTestNode(nodesHandler.getValue().iterator().next());
   }
 
   @Test
@@ -47,7 +59,7 @@ public class Neo4jComplexTest {
     graph.complex().resetNodeRelationships(id, "connected", targetIds, idsHandler);
     Assert.assertFalse(idsHandler.getValue().iterator().hasNext());
 
-    graph.relationships().fetchAllForNode(id, relationshipsHandler);
+    graph.relationships().fetchAllOfNode(id, relationshipsHandler);
     Assert.assertTrue(relationshipsHandler.getValue().iterator().hasNext());
   }
 
@@ -57,8 +69,24 @@ public class Neo4jComplexTest {
     return currentNodeId();
   }
 
+  private Object addTestRelationship() {
+    fromNodeId = addTestNode();
+    toNodeId = addTestNode();
+    properties = Fixtures.testRelationship();
+    graph.relationships().create(fromNodeId, toNodeId, "connected", properties, idHandler);
+    return currentRelationshipId();
+  }
+
   private Object currentNodeId() {
     return Fixtures.NODE_ID_FIELD == null ? idHandler.getValue() : properties.get(Fixtures.NODE_ID_FIELD);
+  }
+
+  private Object currentRelationshipId() {
+    return Fixtures.RELATIONSHIP_ID_FIELD == null ? idHandler.getValue() : properties.get(Fixtures.RELATIONSHIP_ID_FIELD);
+  }
+
+  private void assertTestNode(Map<String, Object> properties) {
+    Assert.assertEquals("test node", properties.get("content"));
   }
 
 }

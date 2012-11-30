@@ -26,7 +26,9 @@ public class Neo4jGraphModule extends Verticle {
     registerRemoveNodeHandler();
     registerStoreRelationshipHandler();
     registerFetchRelationshipHandler();
+    registerFetchAllRelationshipsOfNodeHandler();
     registerRemoveRelationshipHandler();
+    registerComplexFetchAllRelatedNodes();
     registerComplexResettingOfNodeRelationships();
     registerClearHandler();
   }
@@ -106,7 +108,7 @@ public class Neo4jGraphModule extends Verticle {
           database.nodes().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
             @Override
             public void handle(Map<String, Object> node) {
-              message.reply(node == null ? null : nodeMessage(node));
+              message.reply(node == null ? null : propertiesMessage(node));
             }
 
             @Override
@@ -207,7 +209,35 @@ public class Neo4jGraphModule extends Verticle {
           database.relationships().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
             @Override
             public void handle(Map<String, Object> node) {
-              message.reply(node == null ? null : nodeMessage(node));
+              message.reply(node == null ? null : propertiesMessage(node));
+            }
+
+            @Override
+            public void exception(Exception exception) {
+              message.reply(failMessage(exception));
+            }
+          });
+        } catch (Exception exception) {
+          message.reply(failMessage(exception));
+        }
+      }
+    });
+  }
+
+  private void registerFetchAllRelationshipsOfNodeHandler() {
+    final Graph database = this.database;
+    vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".relationships.fetch-all-of-node", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(final Message<JsonObject> message) {
+        Object nodeId = getIdIn(message.body, "node_id");
+        String name = message.body.getString("name");
+        String direction = message.body.getString("direction");
+
+        try {
+          database.relationships().fetchAllOfNode(nodeId, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
+            @Override
+            public void handle(Iterable<Map<String, Object>> relationships) {
+              message.reply(relationshipsMessage(relationships));
             }
 
             @Override
@@ -247,6 +277,34 @@ public class Neo4jGraphModule extends Verticle {
     });
   }
 
+  private void registerComplexFetchAllRelatedNodes() {
+    vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".complex.fetch-all-related-nodes", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(final Message<JsonObject> message) {
+        Object nodeId = getIdIn(message.body, "node_id");
+        String name = message.body.getString("name");
+        String direction = message.body.getString("direction");
+
+        try {
+          database.complex().fetchAllRelatedNodes(nodeId, name, direction, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
+            @Override
+            public void handle(Iterable<Map<String, Object>> nodes) {
+              message.reply(nodesMessage(nodes));
+            }
+
+            @Override
+            public void exception(Exception exception) {
+              message.reply(failMessage(exception));
+            }
+          });
+        } catch (Exception exception) {
+          message.reply(failMessage(exception));
+        }
+      }
+    });
+
+  }
+
   private void registerComplexResettingOfNodeRelationships() {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".complex.reset-node-relationships", new Handler<Message<JsonObject>>() {
       @Override
@@ -281,7 +339,7 @@ public class Neo4jGraphModule extends Verticle {
           }, new me.phifty.graph.Handler<Iterable<Object>>() {
               @Override
               public void handle(Iterable<Object> value) {
-                message.reply(idsMessage(value));
+                message.reply(idsMessage(value, "not_found_ids"));
               }
 
               @Override
@@ -340,16 +398,38 @@ public class Neo4jGraphModule extends Verticle {
   }
 
   private JsonObject idsMessage(Iterable<Object> value) {
+    return idsMessage(value, "ids");
+  }
+
+  private JsonObject idsMessage(Iterable<Object> value, String field) {
     JsonObject message = new JsonObject();
     JsonArray ids = new JsonArray();
     for (Object id : value) {
       ids.add(id);
     }
-    message.putArray("not_found_ids", ids);
+    message.putArray(field, ids);
     return message;
   }
 
-  private JsonObject nodeMessage(Map<String, Object> properties) {
+  private JsonObject nodesMessage(Iterable<Map<String, Object>> value) {
+    return propertiesArrayMessage(value, "nodes");
+  }
+
+  private JsonObject relationshipsMessage(Iterable<Map<String, Object>> value) {
+    return propertiesArrayMessage(value, "relationships");
+  }
+
+  private JsonObject propertiesArrayMessage(Iterable<Map<String, Object>> value, String field) {
+    JsonObject message = new JsonObject();
+    JsonArray nodes = new JsonArray();
+    for (Map<String, Object> node : value) {
+      nodes.add(propertiesMessage(node));
+    }
+    message.putArray(field, nodes);
+    return message;
+  }
+
+  private JsonObject propertiesMessage(Map<String, Object> properties) {
     return new JsonObject(properties);
   }
 

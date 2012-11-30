@@ -78,7 +78,7 @@ public class Neo4jRelationships implements Relationships {
   }
 
   @Override
-  public void fetchAllForNode(Object nodeId, Handler<Iterable<Map<String, Object>>> handler) {
+  public void fetchAllOfNode(Object nodeId, Handler<Iterable<Map<String, Object>>> handler) {
     Node node = finder.getNode(nodeId);
     if (node == null) {
       handler.handle(new ArrayList<Map<String, Object>>());

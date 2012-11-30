@@ -241,6 +241,35 @@ public class Neo4jGraphTestClient extends TestClientBase {
     });
   }
 
+  public void testFetchAllRelationshipsOfNode() {
+    addTestRelationship("test relationship", new Handler<Long>() {
+      @Override
+      public void handle(final Long id) {
+        vertx.eventBus().send(
+          "test.neo4j-graph.relationships.fetch-all-of-node",
+          generateFetchIncomingRelationshipsOfNodeMessage(testNodeId),
+          new Handler<Message<JsonObject>>() {
+
+            @Override
+            public void handle(Message<JsonObject> message) {
+              checkForException(message);
+              try {
+                tu.azzert("test relationship".equals(((JsonObject)message.body.getArray("relationships").get(0)).getString("content")),
+                  "should respond the right relationship");
+              } finally {
+                clearAll(new Handler<Boolean>() {
+                  @Override
+                  public void handle(Boolean done) {
+                    tu.testComplete();
+                  }
+                });
+              }
+            }
+          });
+      }
+    });
+  }
+
   public void testRemoveRelationship() {
     addTestRelationship("test relationship", new Handler<Long>() {
       @Override
@@ -274,6 +303,38 @@ public class Neo4jGraphTestClient extends TestClientBase {
     });
   }
 
+  public void testComplexFetchAllRelatedNodes() {
+    addTestRelationship("test relationship", new Handler<Long>() {
+      @Override
+      public void handle(Long id) {
+        vertx.eventBus().send(
+          "test.neo4j-graph.complex.fetch-all-related-nodes",
+          generateFetchRelatedNodesMessage(testNodeId),
+          new Handler<Message<JsonObject>>() {
+
+            @Override
+            public void handle(Message<JsonObject> message) {
+              try {
+                JsonArray nodes = message.body.getArray("nodes");
+                tu.azzert(nodes != null, "should respond some nodes");
+                tu.azzert(nodes.size() > 0, "should respond at least one node");
+                tu.azzert("test node one".equals(((JsonObject)nodes.get(0)).getString("content")),
+                  "should respond all target node that are related to the given one");
+              } finally {
+                clearAll(new Handler<Boolean>() {
+                  @Override
+                  public void handle(Boolean done) {
+                    tu.testComplete();
+                  }
+                });
+              }
+            }
+          }
+        );
+      }
+    });
+  }
+
   public void testComplexResettingOfNodeRelationships() {
     addTestNode("test node one", new Handler<Long>() {
       @Override
@@ -287,18 +348,27 @@ public class Neo4jGraphTestClient extends TestClientBase {
               new Handler<Message<JsonObject>>() {
 
                 @Override
-                public void handle(Message<JsonObject> message) {
+                public void handle(final Message<JsonObject> message) {
                   checkForException(message);
-                  try {
-                    tu.azzert(message.body.getArray("ids").contains(66666), "should respond all target node ids that couldn't be found");
-                  } finally {
-                    clearAll(new Handler<Boolean>() {
-                      @Override
-                      public void handle(Boolean done) {
-                        tu.testComplete();
+                  fetchRelatedNodes(idOne, new Handler<String[]>() {
+                    @Override
+                    public void handle(String[] contents) {
+                      try {
+                        tu.azzert(message.body.getArray("ids").contains(66666),
+                          "should respond all target node ids that couldn't be found");
+
+                        tu.azzert(contents.length == 1 && "test node two".equals(contents[0]),
+                          "should connect the given node with the given list of other nodes");
+                      } finally {
+                        clearAll(new Handler<Boolean>() {
+                          @Override
+                          public void handle(Boolean done) {
+                            tu.testComplete();
+                          }
+                        });
                       }
-                    });
-                  }
+                    }
+                  });
                 }
               });
           }
@@ -358,12 +428,33 @@ public class Neo4jGraphTestClient extends TestClientBase {
   }
 
   private void fetchTestNode(final Handler<String> handler) {
-    vertx.eventBus().send("test.neo4j-graph.nodes.fetch", generateIdMessage(testNodeId), new Handler<Message<JsonObject>>() {
+    vertx.eventBus().send(
+      "test.neo4j-graph.nodes.fetch",
+      generateIdMessage(testNodeId),
+      new Handler<Message<JsonObject>>() {
+
       @Override
       public void handle(Message<JsonObject> message) {
         handler.handle(message.body == null ? null : message.body.getString("content"));
       }
     });
+  }
+
+  private void fetchRelatedNodes(long id, final Handler<String[]> handler) {
+    vertx.eventBus().send(
+      "test.neo4j-graph.complex.fetch-all-related-nodes",
+      generateFetchRelatedNodesMessage(id),
+      new Handler<Message<JsonObject>>() {
+        @Override
+        public void handle(Message<JsonObject> message) {
+          JsonArray nodes = message.body.getArray("nodes");
+          String[] contents = new String[ nodes.size() ];
+          for (int index = 0; index < contents.length; index++) {
+            contents[index] = ((JsonObject)nodes.get(index)).getString("content");
+          }
+          handler.handle(contents);
+        }
+      });
   }
 
   private void addTestRelationship(final String content, final Handler<Long> handler) {
@@ -467,6 +558,26 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
     message.putNumber("id", id);
     message.putObject("properties", properties);
+
+    return message;
+  }
+
+  private JsonObject generateFetchIncomingRelationshipsOfNodeMessage(long id) {
+    JsonObject message = new JsonObject();
+
+    message.putNumber("node_id", id);
+    message.putString("name", "connected");
+    message.putString("direction", "incoming");
+
+    return message;
+  }
+
+  private JsonObject generateFetchRelatedNodesMessage(long id) {
+    JsonObject message = new JsonObject();
+
+    message.putNumber("node_id", id);
+    message.putString("name", "connected");
+    message.putString("direction", "incoming");
 
     return message;
   }

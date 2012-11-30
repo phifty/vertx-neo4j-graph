@@ -77,10 +77,10 @@ public class Neo4jRelationshipsTest {
   }
 
   @Test
-  public void testFetchAllRelationshipsForNode() {
+  public void testFetchAllRelationshipsOfNode() {
     addTestRelationship();
 
-    graph.relationships().fetchAllForNode(fromNodeId, relationshipsHandler);
+    graph.relationships().fetchAllOfNode(fromNodeId, relationshipsHandler);
     assertTestRelationship(relationshipsHandler.getValue().iterator().next());
   }
 
