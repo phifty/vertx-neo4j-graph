@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * @author phifty <b.phifty@gmail.com>
  */
-public class Neo4jGraphTest {
+public class Neo4jRelationshipsTest {
 
   private FakeHandler<Object> idHandler = new FakeHandler<>();
   private FakeHandler<Boolean> doneHandler = new FakeHandler<>();
@@ -39,17 +39,46 @@ public class Neo4jGraphTest {
   }
 
   @Test
-  public void testClear() {
-    Object nodeId = addTestNode();
-    Object relationshipId = addTestRelationship();
+  public void testCreateRelationship() {
+    Object fromId = addTestNode();
+    Object toId = addTestNode();
+    properties = Fixtures.testRelationship();
 
-    graph.clear(doneHandler);
+    graph.relationships().create(fromId, toId, "connected", properties, idHandler);
+    Assert.assertNotNull(idHandler.getValue());
+
+    graph.relationships().fetch(currentRelationshipId(), relationshipHandler);
+    assertTestRelationship(relationshipHandler.getValue());
+  }
+
+  @Test
+  public void testUpdateRelationship() {
+    Object id = addTestRelationship();
+
+    properties = Fixtures.updatedTestRelationship();
+    graph.relationships().update(id, properties, doneHandler);
     Assert.assertTrue(doneHandler.getValue());
 
-    graph.nodes().fetch(nodeId, nodeHandler);
-    Assert.assertNull(nodeHandler.getValue());
+    graph.relationships().fetch(currentRelationshipId(), relationshipHandler);
+    assertUpdatedTestRelationship(relationshipHandler.getValue());
+  }
 
-    graph.relationships().fetch(relationshipId, relationshipHandler);
+  @Test
+  public void testFetchRelationship() {
+    Object id = addTestRelationship();
+
+    graph.relationships().fetch(id, relationshipHandler);
+    assertTestRelationship(relationshipHandler.getValue());
+  }
+
+  @Test
+  public void testRemoveRelationship() {
+    Object id = addTestRelationship();
+
+    graph.relationships().remove(id, doneHandler);
+    Assert.assertTrue(doneHandler.getValue());
+
+    graph.relationships().fetch(id, relationshipHandler);
     Assert.assertNull(relationshipHandler.getValue());
   }
 
@@ -73,6 +102,14 @@ public class Neo4jGraphTest {
 
   private Object currentRelationshipId() {
     return Fixtures.RELATIONSHIP_ID_FIELD == null ? idHandler.getValue() : properties.get(Fixtures.RELATIONSHIP_ID_FIELD);
+  }
+
+  private void assertTestRelationship(Map<String, Object> properties) {
+    Assert.assertEquals("test relationship", properties.get("content"));
+  }
+
+  private void assertUpdatedTestRelationship(Map<String, Object> properties) {
+    Assert.assertEquals("updated test relationship", properties.get("content"));
   }
 
 }
