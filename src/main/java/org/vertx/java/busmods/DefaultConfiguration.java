@@ -17,4 +17,14 @@ public class DefaultConfiguration implements Configuration {
     return System.getProperty("user.home") + File.pathSeparator + "graph";
   }
 
+  @Override
+  public String getAlternateNodeIdField() {
+    return null;
+  }
+
+  @Override
+  public String getAlternateRelationshipIdField() {
+    return null;
+  }
+
 }

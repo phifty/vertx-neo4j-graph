@@ -11,4 +11,8 @@ public interface Configuration {
 
   public String getPath();
 
+  public String getAlternateNodeIdField();
+
+  public String getAlternateRelationshipIdField();
+
 }

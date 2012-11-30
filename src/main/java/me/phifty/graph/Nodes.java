@@ -1,7 +1,5 @@
 package me.phifty.graph;
 
-import me.phifty.graph.Handler;
-
 import java.util.Map;
 
 /**
@@ -9,13 +7,13 @@ import java.util.Map;
  */
 public interface Nodes {
 
-  public void create(Map<String, Object> properties, Handler<Identifier> handler);
+  public void create(Map<String, Object> properties, Handler<Object> handler);
 
-  public void update(Identifier id, Map<String, Object> properties, Handler<Boolean> handler);
+  public void update(Object id, Map<String, Object> properties, Handler<Boolean> handler);
 
-  public void fetch(Identifier id, Handler<Map<String, Object>> handler);
+  public void fetch(Object id, Handler<Map<String, Object>> handler);
 
-  public void remove(Identifier id, Handler<Boolean> handler);
+  public void remove(Object id, Handler<Boolean> handler);
 
   public void clear(Handler<Boolean> handler);
 

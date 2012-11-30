@@ -27,4 +27,14 @@ public class JsonConfiguration implements Configuration {
     return object.getString("path", defaultConfiguration.getPath());
   }
 
+  @Override
+  public String getAlternateNodeIdField() {
+    return object.getString("alternate_node_id_field");
+  }
+
+  @Override
+  public String getAlternateRelationshipIdField() {
+    return object.getString("alternate_relationship_id_field");
+  }
+
 }

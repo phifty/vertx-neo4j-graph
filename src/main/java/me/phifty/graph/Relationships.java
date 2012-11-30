@@ -7,13 +7,13 @@ import java.util.Map;
  */
 public interface Relationships {
 
-  public void create(Identifier fromId, Identifier toId, String name, Map<String, Object> properties, Handler<Identifier> handler);
+  public void create(Object fromId, Object toId, String name, Map<String, Object> properties, Handler<Object> handler);
 
-  public void update(Identifier id, Map<String, Object> properties, Handler<Boolean> handler);
+  public void update(Object id, Map<String, Object> properties, Handler<Boolean> handler);
 
-  public void fetch(Identifier id, Handler<Map<String, Object>> handler);
+  public void fetch(Object id, Handler<Map<String, Object>> handler);
 
-  public void remove(Identifier id, Handler<Boolean> handler);
+  public void remove(Object id, Handler<Boolean> handler);
 
   public void clear(Handler<Boolean> handler);
 

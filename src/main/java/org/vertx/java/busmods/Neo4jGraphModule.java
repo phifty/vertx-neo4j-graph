@@ -1,7 +1,6 @@
 package org.vertx.java.busmods;
 
 import me.phifty.graph.Graph;
-import me.phifty.graph.Identifier;
 import me.phifty.graph.neo4j.Neo4jGraph;
 import org.vertx.java.busmods.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
@@ -40,7 +39,10 @@ public class Neo4jGraphModule extends Verticle {
   }
 
   private void initializeDatabase() {
-    database = new Neo4jGraph(configuration.getPath());
+    database = new Neo4jGraph(
+      configuration.getPath(),
+      configuration.getAlternateNodeIdField(),
+      configuration.getAlternateRelationshipIdField());
   }
 
   private void registerStoreNodeHandler() {
@@ -52,7 +54,7 @@ public class Neo4jGraphModule extends Verticle {
         Map<String, Object> properties = body.containsKey("properties") ? (Map<String, Object>)body.get("properties") : null;
 
         if (body.containsKey("id")) {
-          Identifier id = new Identifier(Long.parseLong(body.get("id").toString()));
+          Object id = getIdIn(message.body);
 
           try {
             database.nodes().update(id, properties, new me.phifty.graph.Handler<Boolean>() {
@@ -71,9 +73,9 @@ public class Neo4jGraphModule extends Verticle {
           }
         } else {
           try {
-            database.nodes().create(properties, new me.phifty.graph.Handler<Identifier>() {
+            database.nodes().create(properties, new me.phifty.graph.Handler<Object>() {
               @Override
-              public void handle(Identifier id) {
+              public void handle(Object id) {
                 message.reply(idMessage(id));
               }
 
@@ -95,7 +97,7 @@ public class Neo4jGraphModule extends Verticle {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".nodes.fetch", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(final Message<JsonObject> message) {
-        Identifier id = new Identifier(message.body.getLong("id"));
+        Object id = getIdIn(message.body);
 
         try {
           database.nodes().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
@@ -120,7 +122,7 @@ public class Neo4jGraphModule extends Verticle {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".nodes.remove", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(final Message<JsonObject> message) {
-        Identifier id = new Identifier(message.body.getLong("id"));
+        Object id = getIdIn(message.body);
 
         try {
           database.nodes().remove(id, new me.phifty.graph.Handler<Boolean>() {
@@ -150,7 +152,7 @@ public class Neo4jGraphModule extends Verticle {
         Map<String, Object> properties = body.containsKey("properties") ? (Map<String, Object>)body.get("properties") : null;
 
         if (body.containsKey("id")) {
-          Identifier id = new Identifier(Long.parseLong(body.get("id").toString()));
+          Object id = getIdIn(message.body);
 
           try {
             database.relationships().update(id, properties, new me.phifty.graph.Handler<Boolean>() {
@@ -168,13 +170,13 @@ public class Neo4jGraphModule extends Verticle {
             message.reply(failMessage(exception));
           }
         } else {
-          Identifier fromId = new Identifier(message.body.getLong("from"));
-          Identifier toId = new Identifier(message.body.getLong("to"));
+          Object fromId = getIdIn(message.body, "from");
+          Object toId = getIdIn(message.body, "to");
           String name = message.body.getString("name");
           try {
-            database.relationships().create(fromId, toId, name, properties, new me.phifty.graph.Handler<Identifier>() {
+            database.relationships().create(fromId, toId, name, properties, new me.phifty.graph.Handler<Object>() {
               @Override
-              public void handle(Identifier id) {
+              public void handle(Object id) {
                 message.reply(idMessage(id));
               }
 
@@ -196,7 +198,7 @@ public class Neo4jGraphModule extends Verticle {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".relationships.fetch", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(final Message<JsonObject> message) {
-        Identifier id = new Identifier(message.body.getLong("id"));
+        Object id = getIdIn(message.body);
 
         try {
           database.relationships().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
@@ -221,7 +223,7 @@ public class Neo4jGraphModule extends Verticle {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".relationships.remove", new Handler<Message<JsonObject>>() {
       @Override
       public void handle(final Message<JsonObject> message) {
-        Identifier id = new Identifier(message.body.getLong("id"));
+        Object id = getIdIn(message.body);
 
         try {
           database.relationships().remove(id, new me.phifty.graph.Handler<Boolean>() {
@@ -265,15 +267,23 @@ public class Neo4jGraphModule extends Verticle {
     });
   }
 
+  private Object getIdIn(JsonObject body) {
+    return getIdIn(body, "id");
+  }
+
+  private Object getIdIn(JsonObject body, String field) {
+    return body.getField(field) instanceof String ? body.getString(field) : body.getLong(field);
+  }
+
   private JsonObject doneMessage(Boolean done) {
     JsonObject message = new JsonObject();
     message.putBoolean("done", done);
     return message;
   }
 
-  private JsonObject idMessage(Identifier id) {
+  private JsonObject idMessage(Object id) {
     JsonObject message = new JsonObject();
-    message.putNumber("id", (Long)id.getId());
+    message.putNumber("id", (Long)id);
     return message;
   }
 

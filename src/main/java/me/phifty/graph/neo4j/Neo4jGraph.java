@@ -16,14 +16,28 @@ public class Neo4jGraph implements Graph {
   private Relationships relationships;
 
   public Neo4jGraph(String path) {
-    this(path, new Neo4jGraphDatabaseServiceFactory());
+    this(path, null, null, new Neo4jGraphDatabaseServiceFactory());
   }
 
-  public Neo4jGraph(String path, GraphDatabaseServiceFactory graphDatabaseServiceFactory) {
+  public Neo4jGraph(String path, String alternateNodeIdField) {
+    this(path, alternateNodeIdField, null, new Neo4jGraphDatabaseServiceFactory());
+  }
+
+  public Neo4jGraph(String path, String alternateNodeIdField, String alternateRelationshipIdField) {
+    this(path, alternateNodeIdField, alternateRelationshipIdField, new Neo4jGraphDatabaseServiceFactory());
+  }
+
+  public Neo4jGraph(
+    String path,
+    String alternateNodeIdField,
+    String alternateRelationshipIdField,
+    GraphDatabaseServiceFactory graphDatabaseServiceFactory) {
+
     graphDatabaseService = graphDatabaseServiceFactory.create(path);
 
-    nodes = new Neo4jNodes(graphDatabaseService);
-    relationships = new Neo4jRelationships(graphDatabaseService);
+    Finder finder = new Finder(graphDatabaseService, alternateNodeIdField, alternateRelationshipIdField);
+    nodes = new Neo4jNodes(graphDatabaseService, finder);
+    relationships = new Neo4jRelationships(graphDatabaseService, finder);
   }
 
   @Override
