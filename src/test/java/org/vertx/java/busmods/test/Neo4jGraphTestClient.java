@@ -34,7 +34,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
   public void testCreateNode() {
     vertx.eventBus().send(
       "test.neo4j-graph.nodes.store",
-      generateCreateNodeMessage("test node"),
+      Messages.createNode("test node"),
       new Handler<Message<JsonObject>>() {
 
       @Override
@@ -66,7 +66,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
       public void handle(Long id) {
         vertx.eventBus().send(
           "test.neo4j-graph.nodes.store",
-          generateUpdateNodeMessage(id, "updated test node"),
+          Messages.updateNode(id, "updated test node"),
           new Handler<Message<JsonObject>>() {
 
           @Override
@@ -97,7 +97,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
     addTestNode("test node", new Handler<Long>() {
       @Override
       public void handle(Long id) {
-        vertx.eventBus().send("test.neo4j-graph.nodes.fetch", generateIdMessage(id), new Handler<Message<JsonObject>>() {
+        vertx.eventBus().send("test.neo4j-graph.nodes.fetch", Messages.id(id), new Handler<Message<JsonObject>>() {
           @Override
           public void handle(Message<JsonObject> message) {
             try {
@@ -121,7 +121,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
     addTestNode("test node", new Handler<Long>() {
       @Override
       public void handle(Long id) {
-        vertx.eventBus().send("test.neo4j-graph.nodes.remove", generateIdMessage(id), new Handler<Message<JsonObject>>() {
+        vertx.eventBus().send("test.neo4j-graph.nodes.remove", Messages.id(id), new Handler<Message<JsonObject>>() {
           @Override
           public void handle(Message<JsonObject> message) {
             fetchTestNode(new Handler<String>() {
@@ -149,7 +149,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
           public void handle(final Long idTwo) {
             vertx.eventBus().send(
               "test.neo4j-graph.relationships.store",
-              generateCreateRelationshipMessage(idOne, idTwo, "test relationship"),
+              Messages.createRelationship(idOne, idTwo, "test relationship"),
               new Handler<Message<JsonObject>>() {
 
               @Override
@@ -185,7 +185,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
       public void handle(Long id) {
         vertx.eventBus().send(
           "test.neo4j-graph.relationships.store",
-          generateUpdateRelationshipMessage(id, "updated test relationship"),
+          Messages.updateRelationship(id, "updated test relationship"),
           new Handler<Message<JsonObject>>() {
 
             @Override
@@ -219,7 +219,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
       public void handle(Long id) {
         vertx.eventBus().send(
           "test.neo4j-graph.relationships.fetch",
-          generateIdMessage(id),
+          Messages.id(id),
           new Handler<Message<JsonObject>>() {
 
             @Override
@@ -247,7 +247,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
       public void handle(final Long id) {
         vertx.eventBus().send(
           "test.neo4j-graph.relationships.fetch-all-of-node",
-          generateFetchIncomingRelationshipsOfNodeMessage(testNodeId),
+          Messages.fetchIncomingRelationshipsOfNode(testNodeId),
           new Handler<Message<JsonObject>>() {
 
             @Override
@@ -276,7 +276,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
       public void handle(Long id) {
         vertx.eventBus().send(
           "test.neo4j-graph.relationships.remove",
-          generateIdMessage(id),
+          Messages.id(id),
           new Handler<Message<JsonObject>>() {
 
             @Override
@@ -309,7 +309,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
       public void handle(Long id) {
         vertx.eventBus().send(
           "test.neo4j-graph.complex.fetch-all-related-nodes",
-          generateFetchRelatedNodesMessage(testNodeId),
+          Messages.fetchRelatedNodes(testNodeId),
           new Handler<Message<JsonObject>>() {
 
             @Override
@@ -344,7 +344,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
           public void handle(final Long idTwo) {
             vertx.eventBus().send(
               "test.neo4j-graph.complex.reset-node-relationships",
-              generateNodeRelationshipsResettingMessage(idOne, new long[] { idTwo, 66666 }),
+              Messages.resettingNodeRelationships(idOne, new long[]{idTwo, 66666}),
               new Handler<Message<JsonObject>>() {
 
                 @Override
@@ -384,7 +384,11 @@ public class Neo4jGraphTestClient extends TestClientBase {
         addTestRelationship("test relationship", new Handler<Long>() {
           @Override
           public void handle(final Long relationshipId) {
-            vertx.eventBus().send("test.neo4j-graph.clear", null, new Handler<Message<JsonObject>>() {
+            vertx.eventBus().send(
+              "test.neo4j-graph.clear",
+              null,
+              new Handler<Message<JsonObject>>() {
+
               @Override
               public void handle(Message<JsonObject> message) {
                 checkForException(message);
@@ -418,7 +422,11 @@ public class Neo4jGraphTestClient extends TestClientBase {
   }
 
   private void addTestNode(String content, final Handler<Long> handler) {
-    vertx.eventBus().send("test.neo4j-graph.nodes.store", generateCreateNodeMessage(content), new Handler<Message<JsonObject>>() {
+    vertx.eventBus().send(
+      "test.neo4j-graph.nodes.store",
+      Messages.createNode(content),
+      new Handler<Message<JsonObject>>() {
+
       @Override
       public void handle(Message<JsonObject> message) {
         testNodeId = message.body.getLong("id");
@@ -430,7 +438,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
   private void fetchTestNode(final Handler<String> handler) {
     vertx.eventBus().send(
       "test.neo4j-graph.nodes.fetch",
-      generateIdMessage(testNodeId),
+      Messages.id(testNodeId),
       new Handler<Message<JsonObject>>() {
 
       @Override
@@ -443,8 +451,9 @@ public class Neo4jGraphTestClient extends TestClientBase {
   private void fetchRelatedNodes(long id, final Handler<String[]> handler) {
     vertx.eventBus().send(
       "test.neo4j-graph.complex.fetch-all-related-nodes",
-      generateFetchRelatedNodesMessage(id),
+      Messages.fetchRelatedNodes(id),
       new Handler<Message<JsonObject>>() {
+
         @Override
         public void handle(Message<JsonObject> message) {
           JsonArray nodes = message.body.getArray("nodes");
@@ -466,7 +475,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
           public void handle(final Long idTwo) {
             vertx.eventBus().send(
               "test.neo4j-graph.relationships.store",
-              generateCreateRelationshipMessage(idOne, idTwo, content),
+              Messages.createRelationship(idOne, idTwo, content),
               new Handler<Message<JsonObject>>() {
 
               @Override
@@ -484,7 +493,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
   private void fetchTestRelationship(final Handler<String> handler) {
     vertx.eventBus().send(
       "test.neo4j-graph.relationships.fetch",
-      generateIdMessage(testRelationshipId),
+      Messages.id(testRelationshipId),
       new Handler<Message<JsonObject>>() {
 
       @Override
@@ -505,96 +514,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
         handler.handle(message.body.getBoolean("done"));
       }
     });
-  }
-
-  private JsonObject generateIdMessage(long id) {
-    JsonObject message = new JsonObject();
-    message.putNumber("id", id);
-    return message;
-  }
-
-  private JsonObject generateCreateNodeMessage(String content) {
-    JsonObject message = new JsonObject();
-
-    JsonObject properties = new JsonObject();
-    properties.putString("content", content);
-
-    message.putObject("properties", properties);
-
-    return message;
-  }
-
-  private JsonObject generateUpdateNodeMessage(long id, String content) {
-    JsonObject message = new JsonObject();
-
-    JsonObject properties = new JsonObject();
-    properties.putString("content", content);
-
-    message.putNumber("id", id);
-    message.putObject("properties", properties);
-
-    return message;
-  }
-
-  private JsonObject generateCreateRelationshipMessage(long fromId, long toId, String content) {
-    JsonObject message = new JsonObject();
-
-    JsonObject properties = new JsonObject();
-    properties.putString("content", content);
-
-    message.putNumber("from", fromId);
-    message.putNumber("to", toId);
-    message.putString("name", "connected");
-    message.putObject("properties", properties);
-
-    return message;
-  }
-
-  private JsonObject generateUpdateRelationshipMessage(long id, String content) {
-    JsonObject message = new JsonObject();
-
-    JsonObject properties = new JsonObject();
-    properties.putString("content", content);
-
-    message.putNumber("id", id);
-    message.putObject("properties", properties);
-
-    return message;
-  }
-
-  private JsonObject generateFetchIncomingRelationshipsOfNodeMessage(long id) {
-    JsonObject message = new JsonObject();
-
-    message.putNumber("node_id", id);
-    message.putString("name", "connected");
-    message.putString("direction", "incoming");
-
-    return message;
-  }
-
-  private JsonObject generateFetchRelatedNodesMessage(long id) {
-    JsonObject message = new JsonObject();
-
-    message.putNumber("node_id", id);
-    message.putString("name", "connected");
-    message.putString("direction", "incoming");
-
-    return message;
-  }
-
-  private JsonObject generateNodeRelationshipsResettingMessage(long id, long[] targetIds) {
-    JsonObject message = new JsonObject();
-
-    JsonArray ids = new JsonArray();
-    for (long targetId : targetIds) {
-      ids.add(targetId);
-    }
-
-    message.putNumber("node_id", id);
-    message.putString("name", "connected");
-    message.putArray("target_ids", ids);
-
-    return message;
   }
 
 }

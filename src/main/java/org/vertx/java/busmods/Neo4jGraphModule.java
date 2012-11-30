@@ -5,7 +5,6 @@ import me.phifty.graph.neo4j.Neo4jGraph;
 import org.vertx.java.busmods.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
-import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.deploy.Verticle;
 
@@ -65,32 +64,32 @@ public class Neo4jGraphModule extends Verticle {
             database.nodes().update(id, properties, new me.phifty.graph.Handler<Boolean>() {
               @Override
               public void handle(Boolean value) {
-                message.reply(doneMessage(true));
+                message.reply(Messages.done(true));
               }
 
               @Override
               public void exception(Exception exception) {
-                message.reply(failMessage(exception));
+                message.reply(Messages.fail(exception));
               }
             });
           } catch (Exception exception) {
-            message.reply(failMessage(exception));
+            message.reply(Messages.fail(exception));
           }
         } else {
           try {
             database.nodes().create(properties, new me.phifty.graph.Handler<Object>() {
               @Override
               public void handle(Object id) {
-                message.reply(idMessage(id));
+                message.reply(Messages.id(id));
               }
 
               @Override
               public void exception(Exception exception) {
-                message.reply(failMessage(exception));
+                message.reply(Messages.fail(exception));
               }
             });
           } catch (Exception exception) {
-            message.reply(failMessage(exception));
+            message.reply(Messages.fail(exception));
           }
         }
       }
@@ -108,16 +107,16 @@ public class Neo4jGraphModule extends Verticle {
           database.nodes().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
             @Override
             public void handle(Map<String, Object> node) {
-              message.reply(node == null ? null : propertiesMessage(node));
+              message.reply(node == null ? null : Messages.properties(node));
             }
 
             @Override
             public void exception(Exception exception) {
-              message.reply(failMessage(exception));
+              message.reply(Messages.fail(exception));
             }
           });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -133,16 +132,16 @@ public class Neo4jGraphModule extends Verticle {
           database.nodes().remove(id, new me.phifty.graph.Handler<Boolean>() {
             @Override
             public void handle(Boolean value) {
-              message.reply(doneMessage(true));
+              message.reply(Messages.done(true));
             }
 
             @Override
             public void exception(Exception exception) {
-              message.reply(failMessage(exception));
+              message.reply(Messages.fail(exception));
             }
           });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -163,16 +162,16 @@ public class Neo4jGraphModule extends Verticle {
             database.relationships().update(id, properties, new me.phifty.graph.Handler<Boolean>() {
               @Override
               public void handle(Boolean value) {
-                message.reply(doneMessage(true));
+                message.reply(Messages.done(true));
               }
 
               @Override
               public void exception(Exception exception) {
-                message.reply(failMessage(exception));
+                message.reply(Messages.fail(exception));
               }
             });
           } catch (Exception exception) {
-            message.reply(failMessage(exception));
+            message.reply(Messages.fail(exception));
           }
         } else {
           Object fromId = getIdIn(message.body, "from");
@@ -182,16 +181,16 @@ public class Neo4jGraphModule extends Verticle {
             database.relationships().create(fromId, toId, name, properties, new me.phifty.graph.Handler<Object>() {
               @Override
               public void handle(Object id) {
-                message.reply(idMessage(id));
+                message.reply(Messages.id(id));
               }
 
               @Override
               public void exception(Exception exception) {
-                message.reply(failMessage(exception));
+                message.reply(Messages.fail(exception));
               }
             });
           } catch (Exception exception) {
-            message.reply(failMessage(exception));
+            message.reply(Messages.fail(exception));
           }
         }
       }
@@ -209,16 +208,16 @@ public class Neo4jGraphModule extends Verticle {
           database.relationships().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
             @Override
             public void handle(Map<String, Object> node) {
-              message.reply(node == null ? null : propertiesMessage(node));
+              message.reply(node == null ? null : Messages.properties(node));
             }
 
             @Override
             public void exception(Exception exception) {
-              message.reply(failMessage(exception));
+              message.reply(Messages.fail(exception));
             }
           });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -237,16 +236,16 @@ public class Neo4jGraphModule extends Verticle {
           database.relationships().fetchAllOfNode(nodeId, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
             @Override
             public void handle(Iterable<Map<String, Object>> relationships) {
-              message.reply(relationshipsMessage(relationships));
+              message.reply(Messages.relationships(relationships));
             }
 
             @Override
             public void exception(Exception exception) {
-              message.reply(failMessage(exception));
+              message.reply(Messages.fail(exception));
             }
           });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -262,16 +261,16 @@ public class Neo4jGraphModule extends Verticle {
           database.relationships().remove(id, new me.phifty.graph.Handler<Boolean>() {
             @Override
             public void handle(Boolean value) {
-              message.reply(doneMessage(true));
+              message.reply(Messages.done(true));
             }
 
             @Override
             public void exception(Exception exception) {
-              message.reply(failMessage(exception));
+              message.reply(Messages.fail(exception));
             }
           });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -289,16 +288,16 @@ public class Neo4jGraphModule extends Verticle {
           database.complex().fetchAllRelatedNodes(nodeId, name, direction, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
             @Override
             public void handle(Iterable<Map<String, Object>> nodes) {
-              message.reply(nodesMessage(nodes));
+              message.reply(Messages.nodes(nodes));
             }
 
             @Override
             public void exception(Exception exception) {
-              message.reply(failMessage(exception));
+              message.reply(Messages.fail(exception));
             }
           });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -339,16 +338,16 @@ public class Neo4jGraphModule extends Verticle {
           }, new me.phifty.graph.Handler<Iterable<Object>>() {
               @Override
               public void handle(Iterable<Object> value) {
-                message.reply(idsMessage(value, "not_found_ids"));
+                message.reply(Messages.ids(value, "not_found_ids"));
               }
 
               @Override
               public void exception(Exception exception) {
-                message.reply(failMessage(exception));
+                message.reply(Messages.fail(exception));
               }
             });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -362,16 +361,16 @@ public class Neo4jGraphModule extends Verticle {
           database.clear(new me.phifty.graph.Handler<Boolean>() {
             @Override
             public void handle(Boolean value) {
-              message.reply(doneMessage(true));
+              message.reply(Messages.done(true));
             }
 
             @Override
             public void exception(Exception exception) {
-              message.reply(failMessage(exception));
+              message.reply(Messages.fail(exception));
             }
           });
         } catch (Exception exception) {
-          message.reply(failMessage(exception));
+          message.reply(Messages.fail(exception));
         }
       }
     });
@@ -383,60 +382,6 @@ public class Neo4jGraphModule extends Verticle {
 
   private Object getIdIn(JsonObject body, String field) {
     return body.getField(field) instanceof String ? body.getString(field) : body.getLong(field);
-  }
-
-  private JsonObject doneMessage(Boolean done) {
-    JsonObject message = new JsonObject();
-    message.putBoolean("done", done);
-    return message;
-  }
-
-  private JsonObject idMessage(Object id) {
-    JsonObject message = new JsonObject();
-    message.putNumber("id", (Long)id);
-    return message;
-  }
-
-  private JsonObject idsMessage(Iterable<Object> value) {
-    return idsMessage(value, "ids");
-  }
-
-  private JsonObject idsMessage(Iterable<Object> value, String field) {
-    JsonObject message = new JsonObject();
-    JsonArray ids = new JsonArray();
-    for (Object id : value) {
-      ids.add(id);
-    }
-    message.putArray(field, ids);
-    return message;
-  }
-
-  private JsonObject nodesMessage(Iterable<Map<String, Object>> value) {
-    return propertiesArrayMessage(value, "nodes");
-  }
-
-  private JsonObject relationshipsMessage(Iterable<Map<String, Object>> value) {
-    return propertiesArrayMessage(value, "relationships");
-  }
-
-  private JsonObject propertiesArrayMessage(Iterable<Map<String, Object>> value, String field) {
-    JsonObject message = new JsonObject();
-    JsonArray nodes = new JsonArray();
-    for (Map<String, Object> node : value) {
-      nodes.add(propertiesMessage(node));
-    }
-    message.putArray(field, nodes);
-    return message;
-  }
-
-  private JsonObject propertiesMessage(Map<String, Object> properties) {
-    return new JsonObject(properties);
-  }
-
-  private JsonObject failMessage(Exception exception) {
-    JsonObject message = new JsonObject();
-    message.putString("exception", exception.toString());
-    return message;
   }
 
 }
