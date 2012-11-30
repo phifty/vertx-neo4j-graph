@@ -35,6 +35,7 @@ public class Neo4jGraphTest {
     idHandler.reset();
     doneHandler.reset();
     nodeHandler.reset();
+    relationshipHandler.reset();
     graph.shutdown();
   }
 

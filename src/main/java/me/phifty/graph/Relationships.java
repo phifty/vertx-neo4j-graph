@@ -13,6 +13,8 @@ public interface Relationships {
 
   public void fetch(Object id, Handler<Map<String, Object>> handler);
 
+  public void fetchAllForNode(Object nodeId, Handler<Iterable<Map<String, Object>>> handler);
+
   public void remove(Object id, Handler<Boolean> handler);
 
   public void clear(Handler<Boolean> handler);

@@ -11,6 +11,8 @@ public interface Graph {
 
   public Relationships relationships();
 
+  public Complex complex();
+
   public void clear(Handler<Boolean> handler);
 
   public void shutdown();

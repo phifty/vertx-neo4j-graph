@@ -19,7 +19,10 @@ public class Neo4jRelationshipsTest {
   private FakeHandler<Boolean> doneHandler = new FakeHandler<>();
   private FakeHandler<Map<String, Object>> nodeHandler = new FakeHandler<>();
   private FakeHandler<Map<String, Object>> relationshipHandler = new FakeHandler<>();
+  private FakeHandler<Iterable<Map<String, Object>>> relationshipsHandler = new FakeHandler<>();
   private Map<String, Object> properties;
+  private Object fromNodeId;
+  private Object toNodeId;
   private Graph graph;
 
   @Before
@@ -35,6 +38,8 @@ public class Neo4jRelationshipsTest {
     idHandler.reset();
     doneHandler.reset();
     nodeHandler.reset();
+    relationshipHandler.reset();
+    relationshipsHandler.reset();
     graph.shutdown();
   }
 
@@ -72,6 +77,14 @@ public class Neo4jRelationshipsTest {
   }
 
   @Test
+  public void testFetchAllRelationshipsForNode() {
+    addTestRelationship();
+
+    graph.relationships().fetchAllForNode(fromNodeId, relationshipsHandler);
+    assertTestRelationship(relationshipsHandler.getValue().iterator().next());
+  }
+
+  @Test
   public void testRemoveRelationship() {
     Object id = addTestRelationship();
 
@@ -89,10 +102,10 @@ public class Neo4jRelationshipsTest {
   }
 
   private Object addTestRelationship() {
-    Object fromId = addTestNode();
-    Object toId = addTestNode();
+    fromNodeId = addTestNode();
+    toNodeId = addTestNode();
     properties = Fixtures.testRelationship();
-    graph.relationships().create(fromId, toId, "connected", properties, idHandler);
+    graph.relationships().create(fromNodeId, toNodeId, "connected", properties, idHandler);
     return currentRelationshipId();
   }
 

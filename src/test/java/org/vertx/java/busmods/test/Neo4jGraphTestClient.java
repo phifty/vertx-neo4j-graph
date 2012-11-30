@@ -3,6 +3,7 @@ package org.vertx.java.busmods.test;
 import org.vertx.java.busmods.Neo4jGraphModule;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.framework.TestClientBase;
 
@@ -273,6 +274,39 @@ public class Neo4jGraphTestClient extends TestClientBase {
     });
   }
 
+  public void testComplexResettingOfNodeRelationships() {
+    addTestNode("test node one", new Handler<Long>() {
+      @Override
+      public void handle(final Long idOne) {
+        addTestNode("test node two", new Handler<Long>() {
+          @Override
+          public void handle(final Long idTwo) {
+            vertx.eventBus().send(
+              "test.neo4j-graph.complex.reset-node-relationships",
+              generateNodeRelationshipsResettingMessage(idOne, new long[] { idTwo, 66666 }),
+              new Handler<Message<JsonObject>>() {
+
+                @Override
+                public void handle(Message<JsonObject> message) {
+                  checkForException(message);
+                  try {
+                    tu.azzert(message.body.getArray("ids").contains(66666), "should respond all target node ids that couldn't be found");
+                  } finally {
+                    clearAll(new Handler<Boolean>() {
+                      @Override
+                      public void handle(Boolean done) {
+                        tu.testComplete();
+                      }
+                    });
+                  }
+                }
+              });
+          }
+        });
+      }
+    });
+  }
+
   public void testClear() {
     addTestNode("test node", new Handler<Long>() {
       @Override
@@ -433,6 +467,21 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
     message.putNumber("id", id);
     message.putObject("properties", properties);
+
+    return message;
+  }
+
+  private JsonObject generateNodeRelationshipsResettingMessage(long id, long[] targetIds) {
+    JsonObject message = new JsonObject();
+
+    JsonArray ids = new JsonArray();
+    for (long targetId : targetIds) {
+      ids.add(targetId);
+    }
+
+    message.putNumber("node_id", id);
+    message.putString("name", "connected");
+    message.putArray("target_ids", ids);
 
     return message;
   }

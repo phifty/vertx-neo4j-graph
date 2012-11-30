@@ -5,9 +5,11 @@ import me.phifty.graph.neo4j.Neo4jGraph;
 import org.vertx.java.busmods.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.deploy.Verticle;
 
+import java.util.Iterator;
 import java.util.Map;
 
 public class Neo4jGraphModule extends Verticle {
@@ -25,6 +27,7 @@ public class Neo4jGraphModule extends Verticle {
     registerStoreRelationshipHandler();
     registerFetchRelationshipHandler();
     registerRemoveRelationshipHandler();
+    registerComplexResettingOfNodeRelationships();
     registerClearHandler();
   }
 
@@ -244,6 +247,55 @@ public class Neo4jGraphModule extends Verticle {
     });
   }
 
+  private void registerComplexResettingOfNodeRelationships() {
+    vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".complex.reset-node-relationships", new Handler<Message<JsonObject>>() {
+      @Override
+      public void handle(final Message<JsonObject> message) {
+        Object nodeId = getIdIn(message.body, "node_id");
+        String name = message.body.getString("name");
+        final Iterable<Object> targetIds = message.body.getArray("target_ids");
+
+        try {
+          database.complex().resetNodeRelationships(nodeId, name, new Iterable<Object>() {
+            @Override
+            public Iterator<Object> iterator() {
+              final Iterator<Object> iterator = targetIds.iterator();
+              return new Iterator<Object>() {
+                @Override
+                public boolean hasNext() {
+                  return iterator.hasNext();
+                }
+
+                @Override
+                public Object next() {
+                  Object id = iterator.next();
+                  return id instanceof String ? id : Long.parseLong(id.toString());
+                }
+
+                @Override
+                public void remove() {
+                  iterator.remove();
+                }
+              };
+            }
+          }, new me.phifty.graph.Handler<Iterable<Object>>() {
+              @Override
+              public void handle(Iterable<Object> value) {
+                message.reply(idsMessage(value));
+              }
+
+              @Override
+              public void exception(Exception exception) {
+                message.reply(failMessage(exception));
+              }
+            });
+        } catch (Exception exception) {
+          message.reply(failMessage(exception));
+        }
+      }
+    });
+  }
+
   private void registerClearHandler() {
     vertx.eventBus().registerHandler(configuration.getBaseAddress() + ".clear", new Handler<Message<JsonObject>>() {
       @Override
@@ -284,6 +336,16 @@ public class Neo4jGraphModule extends Verticle {
   private JsonObject idMessage(Object id) {
     JsonObject message = new JsonObject();
     message.putNumber("id", (Long)id);
+    return message;
+  }
+
+  private JsonObject idsMessage(Iterable<Object> value) {
+    JsonObject message = new JsonObject();
+    JsonArray ids = new JsonArray();
+    for (Object id : value) {
+      ids.add(id);
+    }
+    message.putArray("not_found_ids", ids);
     return message;
   }
 

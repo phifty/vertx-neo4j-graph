@@ -5,7 +5,9 @@ import me.phifty.graph.Relationships;
 import org.neo4j.graphdb.*;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -15,7 +17,6 @@ public class Neo4jRelationships implements Relationships {
 
   private GraphDatabaseService graphDatabaseService;
 
-  private Map<String, RelationshipType> relationshipTypeCache = new HashMap<>();
   private Finder finder;
 
   public Neo4jRelationships(GraphDatabaseService graphDatabaseService, Finder finder) {
@@ -29,7 +30,7 @@ public class Neo4jRelationships implements Relationships {
     try {
       Node fromNode = finder.getNode(fromId);
       Node toNode = finder.getNode(toId);
-      RelationshipType relationshipType = getRelationshipTypeFor(name);
+      RelationshipType relationshipType = DynamicRelationshipType.forName(name);
 
       Relationship relationship = fromNode.createRelationshipTo(toNode, relationshipType);
       PropertyHandler.setProperties(relationship, properties);
@@ -71,8 +72,40 @@ public class Neo4jRelationships implements Relationships {
       } else {
         handler.handle(PropertyHandler.getProperties(relationship));
       }
-    } catch (NotFoundException exception) {
-      handler.handle(null);
+    } catch (Exception exception) {
+      handler.exception(exception);
+    }
+  }
+
+  @Override
+  public void fetchAllForNode(Object nodeId, Handler<Iterable<Map<String, Object>>> handler) {
+    Node node = finder.getNode(nodeId);
+    if (node == null) {
+      handler.handle(new ArrayList<Map<String, Object>>());
+    } else {
+      final Iterable<Relationship> relationships = node.getRelationships();
+      handler.handle(new Iterable<Map<String, Object>>() {
+        @Override
+        public Iterator<Map<String, Object>> iterator() {
+          final Iterator<Relationship> relationshipsIterator = relationships.iterator();
+          return new Iterator<Map<String, Object>>() {
+            @Override
+            public boolean hasNext() {
+              return relationshipsIterator.hasNext();
+            }
+
+            @Override
+            public Map<String, Object> next() {
+              return PropertyHandler.getProperties(relationshipsIterator.next());
+            }
+
+            @Override
+            public void remove() {
+              relationshipsIterator.remove();
+            }
+          };
+        }
+      });
     }
   }
 
@@ -110,31 +143,6 @@ public class Neo4jRelationships implements Relationships {
     } finally {
       transaction.finish();
     }
-  }
-
-  private RelationshipType getRelationshipTypeFor(String name) {
-    if (relationshipTypeCache.containsKey(name)) {
-      return relationshipTypeCache.get(name);
-    } else {
-      RelationshipType relationshipType = new DynamicRelationshipType(name);
-      relationshipTypeCache.put(name, relationshipType);
-      return relationshipType;
-    }
-  }
-
-  private class DynamicRelationshipType implements RelationshipType {
-
-    private String name;
-
-    DynamicRelationshipType(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public String name() {
-      return name;
-    }
-
   }
 
 }

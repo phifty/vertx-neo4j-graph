@@ -42,6 +42,10 @@ public class Neo4jGraphModuleTest extends TestBase {
     startTest(getMethodName());
   }
 
+  public void testComplexResettingOfNodeRelationships() {
+    startTest(getMethodName());
+  }
+
   public void testClear() {
     startTest(getMethodName());
   }
