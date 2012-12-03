@@ -1,8 +1,8 @@
-package org.vertx.java.busmods;
+package org.vertx.java.busmods.graph.neo4j;
 
 import me.phifty.graph.Graph;
 import me.phifty.graph.neo4j.Neo4jGraph;
-import org.vertx.java.busmods.json.JsonConfiguration;
+import org.vertx.java.busmods.graph.neo4j.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonObject;

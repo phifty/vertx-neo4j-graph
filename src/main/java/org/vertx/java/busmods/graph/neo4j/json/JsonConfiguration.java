@@ -1,7 +1,7 @@
-package org.vertx.java.busmods.json;
+package org.vertx.java.busmods.graph.neo4j.json;
 
-import org.vertx.java.busmods.Configuration;
-import org.vertx.java.busmods.DefaultConfiguration;
+import org.vertx.java.busmods.graph.neo4j.Configuration;
+import org.vertx.java.busmods.graph.neo4j.DefaultConfiguration;
 import org.vertx.java.core.json.JsonObject;
 
 /**

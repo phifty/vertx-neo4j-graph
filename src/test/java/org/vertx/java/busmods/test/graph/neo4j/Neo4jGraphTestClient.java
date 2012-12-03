@@ -1,6 +1,6 @@
-package org.vertx.java.busmods.test;
+package org.vertx.java.busmods.test.graph.neo4j;
 
-import org.vertx.java.busmods.Neo4jGraphModule;
+import org.vertx.java.busmods.graph.neo4j.Neo4jGraphModule;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;

@@ -1,4 +1,4 @@
-package org.vertx.java.busmods;
+package org.vertx.java.busmods.graph.neo4j;
 
 import java.io.File;
 

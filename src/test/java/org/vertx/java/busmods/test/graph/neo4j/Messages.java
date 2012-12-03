@@ -1,4 +1,4 @@
-package org.vertx.java.busmods.test;
+package org.vertx.java.busmods.test.graph.neo4j;
 
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
