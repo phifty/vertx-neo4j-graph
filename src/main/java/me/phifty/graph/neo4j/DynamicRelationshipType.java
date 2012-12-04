@@ -33,4 +33,8 @@ public class DynamicRelationshipType implements RelationshipType {
     }
   }
 
+  public static void clearCache() {
+    relationshipTypeCache.clear();
+  }
+
 }

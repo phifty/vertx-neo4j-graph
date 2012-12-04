@@ -2,6 +2,7 @@ package me.phifty.graph.test.neo4j;
 
 import me.phifty.graph.ComplexResetNodeRelationshipsResult;
 import me.phifty.graph.Graph;
+import me.phifty.graph.neo4j.DynamicRelationshipType;
 import me.phifty.graph.neo4j.Neo4jGraph;
 import me.phifty.graph.test.FakeHandler;
 import org.junit.After;
@@ -47,6 +48,11 @@ public class Neo4jComplexTest {
   @Test
   public void testFetchAllRelatedNodes() {
     addTestRelationship();
+
+    graph.complex().fetchAllRelatedNodes(fromNodeId, "connected", "outgoing", nodesHandler);
+    assertTestNode(nodesHandler.getValue().iterator().next());
+
+    DynamicRelationshipType.clearCache();
 
     graph.complex().fetchAllRelatedNodes(fromNodeId, "connected", "outgoing", nodesHandler);
     assertTestNode(nodesHandler.getValue().iterator().next());
