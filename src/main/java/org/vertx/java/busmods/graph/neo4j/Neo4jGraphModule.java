@@ -1,15 +1,16 @@
 package org.vertx.java.busmods.graph.neo4j;
 
+import me.phifty.graph.ComplexResetNodeRelationshipsResult;
 import me.phifty.graph.Graph;
 import me.phifty.graph.neo4j.Neo4jGraph;
 import org.vertx.java.busmods.graph.neo4j.json.JsonConfiguration;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
+import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.deploy.Verticle;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class Neo4jGraphModule extends Verticle {
 
@@ -310,35 +311,18 @@ public class Neo4jGraphModule extends Verticle {
       public void handle(final Message<JsonObject> message) {
         Object nodeId = getIdIn(message.body, "node_id");
         String name = message.body.getString("name");
-        final Iterable<Object> targetIds = message.body.getArray("target_ids");
+        final Set<Object> targetIds = getIdsIn(message.body, "target_ids");
 
         try {
-          database.complex().resetNodeRelationships(nodeId, name, new Iterable<Object>() {
-            @Override
-            public Iterator<Object> iterator() {
-              final Iterator<Object> iterator = targetIds.iterator();
-              return new Iterator<Object>() {
-                @Override
-                public boolean hasNext() {
-                  return iterator.hasNext();
-                }
+          database.complex().resetNodeRelationships(
+            nodeId,
+            name,
+            targetIds,
+            new me.phifty.graph.Handler<ComplexResetNodeRelationshipsResult>() {
 
-                @Override
-                public Object next() {
-                  Object id = iterator.next();
-                  return id instanceof String ? id : Long.parseLong(id.toString());
-                }
-
-                @Override
-                public void remove() {
-                  iterator.remove();
-                }
-              };
-            }
-          }, new me.phifty.graph.Handler<Iterable<Object>>() {
               @Override
-              public void handle(Iterable<Object> value) {
-                message.reply(Messages.ids(value, "not_found_ids"));
+              public void handle(ComplexResetNodeRelationshipsResult value) {
+                message.reply(Messages.resetNodeRelationships(value));
               }
 
               @Override
@@ -374,6 +358,21 @@ public class Neo4jGraphModule extends Verticle {
         }
       }
     });
+  }
+
+  private Set<Object> getIdsIn(JsonObject body) {
+    return getIdsIn(body, "ids");
+  }
+
+  private Set<Object> getIdsIn(JsonObject body, String field) {
+    Set<Object> result = new HashSet<>();
+    JsonArray ids = body.getArray(field);
+
+    for (Object id : ids) {
+      result.add(id instanceof String ? id : Long.parseLong(id.toString()));
+    }
+
+    return result;
   }
 
   private Object getIdIn(JsonObject body) {

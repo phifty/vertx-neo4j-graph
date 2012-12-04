@@ -50,6 +50,14 @@ public class Finder {
     }
   }
 
+  public Object getNodeId(Node node) {
+    if (hasAlternateNodeIdField()) {
+      return node.getProperty(alternateNodeIdField);
+    } else {
+      return node.getId();
+    }
+  }
+
   public Relationship getRelationship(Object id) {
     if (hasAlternateRelationshipIdField()) {
       return relationshipAutoIndexer.getAutoIndex().get(alternateRelationshipIdField, (String)id).getSingle();
@@ -59,6 +67,14 @@ public class Finder {
       } catch (NotFoundException exception) {
         return null;
       }
+    }
+  }
+
+  public Object getRelationshipId(Relationship relationship) {
+    if (hasAlternateRelationshipIdField()) {
+      return relationship.getProperty(alternateRelationshipIdField);
+    } else {
+      return relationship.getId();
     }
   }
 

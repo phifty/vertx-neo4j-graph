@@ -1,5 +1,6 @@
 package me.phifty.graph.test.neo4j;
 
+import me.phifty.graph.ComplexResetNodeRelationshipsResult;
 import me.phifty.graph.Graph;
 import me.phifty.graph.neo4j.Neo4jGraph;
 import me.phifty.graph.test.FakeHandler;
@@ -19,6 +20,7 @@ public class Neo4jComplexTest {
   private FakeHandler<Iterable<Object>> idsHandler = new FakeHandler<>();
   private FakeHandler<Iterable<Map<String, Object>>> nodesHandler = new FakeHandler<>();
   private FakeHandler<Iterable<Map<String, Object>>> relationshipsHandler = new FakeHandler<>();
+  private FakeHandler<ComplexResetNodeRelationshipsResult> resetNodeRelationshipsHandler = new FakeHandler<>();
   private Map<String, Object> properties;
   private Graph graph;
   private Object fromNodeId;
@@ -38,6 +40,7 @@ public class Neo4jComplexTest {
     idsHandler.reset();
     nodesHandler.reset();
     relationshipsHandler.reset();
+    resetNodeRelationshipsHandler.reset();
     graph.shutdown();
   }
 
@@ -50,14 +53,34 @@ public class Neo4jComplexTest {
   }
 
   @Test
-  public void testResettingOfNodeRelationships() {
+  public void testResetNodeRelationships() {
     Object id = addTestNode();
-    List<Object> targetIds = new ArrayList<>();
-    targetIds.add(addTestNode());
-    targetIds.add(addTestNode());
+    Object targetIdOne = addTestNode();
+    Object targetIdTwo = addTestNode();
 
-    graph.complex().resetNodeRelationships(id, "connected", targetIds, idsHandler);
-    Assert.assertFalse(idsHandler.getValue().iterator().hasNext());
+    Set<Object> targetIds = new HashSet<>();
+    targetIds.add(targetIdOne);
+    targetIds.add(targetIdTwo);
+
+    graph.complex().resetNodeRelationships(id, "connected", targetIds, resetNodeRelationshipsHandler);
+
+    Set<Object> addedNodeIds = resetNodeRelationshipsHandler.getValue().addedNodeIds;
+    Assert.assertEquals(2, addedNodeIds.size());
+    Assert.assertTrue(addedNodeIds.contains(targetIdOne));
+    Assert.assertTrue(addedNodeIds.contains(targetIdTwo));
+
+    Set<Object> removedNodeIds = resetNodeRelationshipsHandler.getValue().removedNodeIds;
+    Assert.assertEquals(0, removedNodeIds.size());
+
+    targetIds.remove(targetIdTwo);
+    graph.complex().resetNodeRelationships(id, "connected", targetIds, resetNodeRelationshipsHandler);
+
+    addedNodeIds = resetNodeRelationshipsHandler.getValue().addedNodeIds;
+    Assert.assertEquals(0, addedNodeIds.size());
+
+    removedNodeIds = resetNodeRelationshipsHandler.getValue().removedNodeIds;
+    Assert.assertEquals(1, removedNodeIds.size());
+    Assert.assertTrue(removedNodeIds.contains(targetIdTwo));
 
     graph.relationships().fetchAllOfNode(id, relationshipsHandler);
     Assert.assertTrue(relationshipsHandler.getValue().iterator().hasNext());

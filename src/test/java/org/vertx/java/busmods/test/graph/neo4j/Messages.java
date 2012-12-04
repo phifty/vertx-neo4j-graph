@@ -74,11 +74,15 @@ public class Messages {
   }
 
   public static JsonObject fetchRelatedNodes(long id) {
+    return fetchRelatedNodes(id, "outgoing");
+  }
+
+  public static JsonObject fetchRelatedNodes(long id, String direction) {
     JsonObject message = new JsonObject();
 
     message.putNumber("node_id", id);
     message.putString("name", "connected");
-    message.putString("direction", "incoming");
+    message.putString("direction", direction);
 
     return message;
   }

@@ -7,6 +7,9 @@ import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 import org.vertx.java.framework.TestClientBase;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @author phifty <b.phifty@gmail.com>
  */
@@ -309,7 +312,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
       public void handle(Long id) {
         vertx.eventBus().send(
           "test.neo4j-graph.complex.fetch-all-related-nodes",
-          Messages.fetchRelatedNodes(testNodeId),
+          Messages.fetchRelatedNodes(testNodeId, "incoming"),
           new Handler<Message<JsonObject>>() {
 
             @Override
@@ -350,14 +353,14 @@ public class Neo4jGraphTestClient extends TestClientBase {
                 @Override
                 public void handle(final Message<JsonObject> message) {
                   checkForException(message);
-                  fetchRelatedNodes(idOne, new Handler<String[]>() {
+                  fetchRelatedNodes(idOne, new Handler<Set<String>>() {
                     @Override
-                    public void handle(String[] contents) {
+                    public void handle(Set<String> contents) {
                       try {
-                        tu.azzert(message.body.getArray("ids").contains(66666),
+                        tu.azzert(message.body.getArray("not_found_node_ids").contains(66666),
                           "should respond all target node ids that couldn't be found");
 
-                        tu.azzert(contents.length == 1 && "test node two".equals(contents[0]),
+                        tu.azzert(contents.size() == 1 && contents.contains("test node two"),
                           "should connect the given node with the given list of other nodes");
                       } finally {
                         clearAll(new Handler<Boolean>() {
@@ -448,7 +451,7 @@ public class Neo4jGraphTestClient extends TestClientBase {
     });
   }
 
-  private void fetchRelatedNodes(long id, final Handler<String[]> handler) {
+  private void fetchRelatedNodes(long id, final Handler<Set<String>> handler) {
     vertx.eventBus().send(
       "test.neo4j-graph.complex.fetch-all-related-nodes",
       Messages.fetchRelatedNodes(id),
@@ -457,9 +460,9 @@ public class Neo4jGraphTestClient extends TestClientBase {
         @Override
         public void handle(Message<JsonObject> message) {
           JsonArray nodes = message.body.getArray("nodes");
-          String[] contents = new String[ nodes.size() ];
-          for (int index = 0; index < contents.length; index++) {
-            contents[index] = ((JsonObject)nodes.get(index)).getString("content");
+          Set<String> contents = new HashSet<>();
+          for (Object node : nodes) {
+            contents.add(((JsonObject)node).getString("content"));
           }
           handler.handle(contents);
         }
