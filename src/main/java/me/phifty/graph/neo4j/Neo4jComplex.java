@@ -68,7 +68,7 @@ public class Neo4jComplex implements Complex {
       Set<Object> removedNodeIds = new HashSet<>();
       Set<Object> notFoundNodeIds = new HashSet<>();
 
-      Iterable<Relationship> relationships = node.getRelationships(relationshipType);
+      Iterable<Relationship> relationships = node.getRelationships(relationshipType, Direction.OUTGOING);
 
       // remove obsolete nodes
       Set<Object> currentlyRelatedNodeIds = new HashSet<>();
