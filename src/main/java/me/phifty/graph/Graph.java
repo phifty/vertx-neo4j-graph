@@ -13,7 +13,7 @@ public interface Graph {
 
   public Complex complex();
 
-  public void clear(Handler<Boolean> handler);
+  public void clear(Handler<Boolean> handler) throws Exception;
 
   public void shutdown();
 

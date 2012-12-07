@@ -44,7 +44,7 @@ public class Neo4jRelationshipsTest {
   }
 
   @Test
-  public void testCreateRelationship() {
+  public void testCreateRelationship() throws Exception {
     Object fromId = addTestNode();
     Object toId = addTestNode();
     properties = Fixtures.testRelationship();
@@ -57,7 +57,7 @@ public class Neo4jRelationshipsTest {
   }
 
   @Test
-  public void testUpdateRelationship() {
+  public void testUpdateRelationship() throws Exception {
     Object id = addTestRelationship();
 
     properties = Fixtures.updatedTestRelationship();
@@ -69,7 +69,7 @@ public class Neo4jRelationshipsTest {
   }
 
   @Test
-  public void testFetchRelationship() {
+  public void testFetchRelationship() throws Exception {
     Object id = addTestRelationship();
 
     graph.relationships().fetch(id, relationshipHandler);
@@ -77,7 +77,7 @@ public class Neo4jRelationshipsTest {
   }
 
   @Test
-  public void testFetchAllRelationshipsOfNode() {
+  public void testFetchAllRelationshipsOfNode() throws Exception {
     addTestRelationship();
 
     graph.relationships().fetchAllOfNode(fromNodeId, relationshipsHandler);
@@ -85,7 +85,7 @@ public class Neo4jRelationshipsTest {
   }
 
   @Test
-  public void testRemoveRelationship() {
+  public void testRemoveRelationship() throws Exception {
     Object id = addTestRelationship();
 
     graph.relationships().remove(id, doneHandler);
@@ -95,13 +95,13 @@ public class Neo4jRelationshipsTest {
     Assert.assertNull(relationshipHandler.getValue());
   }
 
-  private Object addTestNode() {
+  private Object addTestNode() throws Exception {
     properties = Fixtures.testNode();
     graph.nodes().create(properties, idHandler);
     return currentNodeId();
   }
 
-  private Object addTestRelationship() {
+  private Object addTestRelationship() throws Exception {
     fromNodeId = addTestNode();
     toNodeId = addTestNode();
     properties = Fixtures.testRelationship();

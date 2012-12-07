@@ -14,11 +14,6 @@ public class FakeHandler<T> implements Handler<T> {
     this.value = value;
   }
 
-  @Override
-  public void exception(Exception exception) {
-    exception.printStackTrace();
-  }
-
   public void reset() {
     value = null;
   }

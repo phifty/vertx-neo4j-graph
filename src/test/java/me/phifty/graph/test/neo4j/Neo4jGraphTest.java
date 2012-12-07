@@ -40,7 +40,7 @@ public class Neo4jGraphTest {
   }
 
   @Test
-  public void testClear() {
+  public void testClear() throws Exception {
     Object nodeId = addTestNode();
     Object relationshipId = addTestRelationship();
 
@@ -54,13 +54,13 @@ public class Neo4jGraphTest {
     Assert.assertNull(relationshipHandler.getValue());
   }
 
-  private Object addTestNode() {
+  private Object addTestNode() throws Exception {
     properties = Fixtures.testNode();
     graph.nodes().create(properties, idHandler);
     return currentNodeId();
   }
 
-  private Object addTestRelationship() {
+  private Object addTestRelationship() throws Exception {
     Object fromId = addTestNode();
     Object toId = addTestNode();
     properties = Fixtures.testRelationship();

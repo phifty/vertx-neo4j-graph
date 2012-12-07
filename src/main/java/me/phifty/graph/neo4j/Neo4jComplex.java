@@ -22,43 +22,44 @@ public class Neo4jComplex implements Complex {
 
   @Override
   public void fetchAllRelatedNodes(Object nodeId, String relationshipName, String directionName, final Handler<Iterable<Map<String, Object>>> handler) {
-    try {
-      final Node node = finder.getNode(nodeId);
-      RelationshipType relationshipType = DynamicRelationshipType.forName(relationshipName);
-      Direction direction = Direction.valueOf(directionName.toUpperCase());
+    final Node node = finder.getNode(nodeId);
+    RelationshipType relationshipType = DynamicRelationshipType.forName(relationshipName);
+    Direction direction = Direction.valueOf(directionName.toUpperCase());
 
-      final Iterable<Relationship> relationships = node.getRelationships(relationshipType, direction);
-      handler.handle(new Iterable<Map<String, Object>>() {
-        @Override
-        public Iterator<Map<String, Object>> iterator() {
-          final Iterator<Relationship> iterator = relationships.iterator();
-          return new Iterator<Map<String, Object>>() {
-            @Override
-            public boolean hasNext() {
-              return iterator.hasNext();
-            }
+    final Iterable<Relationship> relationships = node.getRelationships(relationshipType, direction);
+    handler.handle(new Iterable<Map<String, Object>>() {
+      @Override
+      public Iterator<Map<String, Object>> iterator() {
+        final Iterator<Relationship> iterator = relationships.iterator();
+        return new Iterator<Map<String, Object>>() {
+          @Override
+          public boolean hasNext() {
+            return iterator.hasNext();
+          }
 
-            @Override
-            public Map<String, Object> next() {
-              Relationship relationship = iterator.next();
-              Node targetNode = relationship.getOtherNode(node);
-              return PropertyHandler.getProperties(targetNode);
-            }
+          @Override
+          public Map<String, Object> next() {
+            Relationship relationship = iterator.next();
+            Node targetNode = relationship.getOtherNode(node);
+            return PropertyHandler.getProperties(targetNode);
+          }
 
-            @Override
-            public void remove() {
-              iterator.remove();
-            }
-          };
-        }
-      });
-    } catch (Exception exception) {
-      handler.exception(exception);
-    }
+          @Override
+          public void remove() {
+            iterator.remove();
+          }
+        };
+      }
+    });
   }
 
   @Override
-  public void resetNodeRelationships(Object nodeId, String name, Set<Object> targetIds, Handler<ComplexResetNodeRelationshipsResult> handler) {
+  public void resetNodeRelationships(
+    Object nodeId,
+    String name,
+    Set<Object> targetIds,
+    Handler<ComplexResetNodeRelationshipsResult> handler) throws Exception {
+
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Node node = finder.getNode(nodeId);
@@ -100,7 +101,7 @@ public class Neo4jComplex implements Complex {
       handler.handle(new ComplexResetNodeRelationshipsResult(addedNodeIds, removedNodeIds, notFoundNodeIds));
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }

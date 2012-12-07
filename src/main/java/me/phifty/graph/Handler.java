@@ -7,6 +7,4 @@ public interface Handler<T> {
 
   public void handle(T value);
 
-  public void exception(Exception exception);
-
 }

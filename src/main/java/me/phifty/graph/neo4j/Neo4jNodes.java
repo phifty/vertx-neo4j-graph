@@ -23,7 +23,7 @@ public class Neo4jNodes implements Nodes {
   }
 
   @Override
-  public void create(Map<String, Object> properties, Handler<Object> handler) {
+  public void create(Map<String, Object> properties, Handler<Object> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Node node = graphDatabaseService.createNode();
@@ -32,14 +32,14 @@ public class Neo4jNodes implements Nodes {
       handler.handle(node.getId());
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }
   }
 
   @Override
-  public void update(Object id, Map<String, Object> properties, Handler<Boolean> handler) {
+  public void update(Object id, Map<String, Object> properties, Handler<Boolean> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Node node = finder.getNode(id);
@@ -48,7 +48,7 @@ public class Neo4jNodes implements Nodes {
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }
@@ -56,20 +56,16 @@ public class Neo4jNodes implements Nodes {
 
   @Override
   public void fetch(Object id, Handler<Map<String, Object>> handler) {
-    try {
-      Node node = finder.getNode(id);
-      if (node == null) {
-        handler.handle(null);
-      } else {
-        handler.handle(PropertyHandler.getProperties(node));
-      }
-    } catch (Exception exception) {
-      handler.exception(exception);
+    Node node = finder.getNode(id);
+    if (node == null) {
+      handler.handle(null);
+    } else {
+      handler.handle(PropertyHandler.getProperties(node));
     }
   }
 
   @Override
-  public void remove(Object id, Handler<Boolean> handler) {
+  public void remove(Object id, Handler<Boolean> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Node node = finder.getNode(id);
@@ -78,14 +74,14 @@ public class Neo4jNodes implements Nodes {
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }
   }
 
   @Override
-  public void clear(Handler<Boolean> handler) {
+  public void clear(Handler<Boolean> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(graphDatabaseService);
@@ -96,7 +92,7 @@ public class Neo4jNodes implements Nodes {
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }

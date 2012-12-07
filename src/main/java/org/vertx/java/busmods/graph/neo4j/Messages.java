@@ -18,21 +18,9 @@ public class Messages {
     return message;
   }
 
-  public static JsonObject fail(Exception exception) {
-    JsonObject message = new JsonObject();
-    message.putString("exception", exception.toString());
-    return message;
-  }
-
   public static JsonObject id(Object id) {
     JsonObject message = new JsonObject();
     message.putNumber("id", (Long)id);
-    return message;
-  }
-
-  public static JsonObject ids(Iterable<Object> ids, String field) {
-    JsonObject message = new JsonObject();
-    message.putArray(field, idArray(ids));
     return message;
   }
 

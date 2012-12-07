@@ -55,26 +55,20 @@ public class Neo4jGraph implements Graph {
   }
 
   @Override
-  public void clear(final Handler<Boolean> handler) {
+  public void clear(final Handler<Boolean> handler) throws Exception {
     relationships().clear(new Handler<Boolean>() {
       @Override
       public void handle(final Boolean relationshipsDeleted) {
-        nodes().clear(new Handler<Boolean>() {
-          @Override
-          public void handle(Boolean nodesDeleted) {
-            handler.handle(nodesDeleted && relationshipsDeleted);
-          }
-
-          @Override
-          public void exception(Exception exception) {
-            handler.exception(exception);
-          }
-        });
-      }
-
-      @Override
-      public void exception(Exception exception) {
-        handler.exception(exception);
+        try {
+          nodes().clear(new Handler<Boolean>() {
+            @Override
+            public void handle(Boolean nodesDeleted) {
+              handler.handle(nodesDeleted && relationshipsDeleted);
+            }
+          });
+        } catch (Exception exception) {
+          exception.printStackTrace();
+        }
       }
     });
   }

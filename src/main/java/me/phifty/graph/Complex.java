@@ -10,6 +10,7 @@ public interface Complex {
 
   public void fetchAllRelatedNodes(Object nodeId, String name, String direction, Handler<Iterable<Map<String, Object>>> handler);
 
-  public void resetNodeRelationships(Object nodeId, String name, Set<Object> targetIds, Handler<ComplexResetNodeRelationshipsResult> handler);
+  public void resetNodeRelationships(
+    Object nodeId, String name, Set<Object> targetIds, Handler<ComplexResetNodeRelationshipsResult> handler) throws Exception;
 
 }

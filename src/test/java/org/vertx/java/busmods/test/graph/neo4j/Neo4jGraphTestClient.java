@@ -42,7 +42,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
       @Override
       public void handle(Message<JsonObject> message) {
-        checkForException(message);
         testNodeId = message.body.getLong("id");
         fetchTestNode(new Handler<String>() {
           @Override
@@ -74,7 +73,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
           @Override
           public void handle(Message<JsonObject> message) {
-            checkForException(message);
             fetchTestNode(new Handler<String>() {
               @Override
               public void handle(String content) {
@@ -104,7 +102,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
           @Override
           public void handle(Message<JsonObject> message) {
             try {
-              checkForException(message);
               tu.azzert("test node".equals(message.body.getString("content")), "should respond the right content");
             } finally {
               clearAll(new Handler<Boolean>() {
@@ -157,7 +154,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
               @Override
               public void handle(Message<JsonObject> message) {
-                checkForException(message);
                 testRelationshipId = message.body.getLong("id");
                 fetchTestRelationship(new Handler<String>() {
                   @Override
@@ -193,7 +189,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
             @Override
             public void handle(Message<JsonObject> message) {
-              checkForException(message);
               fetchTestRelationship(new Handler<String>() {
                 @Override
                 public void handle(String content) {
@@ -227,7 +222,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
             @Override
             public void handle(Message<JsonObject> message) {
-              checkForException(message);
               try {
                 tu.azzert("test relationship".equals(message.body.getString("content")), "should respond the right relationship");
               } finally {
@@ -255,7 +249,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
             @Override
             public void handle(Message<JsonObject> message) {
-              checkForException(message);
               try {
                 tu.azzert("test relationship".equals(((JsonObject)message.body.getArray("relationships").get(0)).getString("content")),
                   "should respond the right relationship");
@@ -284,7 +277,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
             @Override
             public void handle(Message<JsonObject> message) {
-              checkForException(message);
               fetchTestRelationship(new Handler<String>() {
                 @Override
                 public void handle(String content) {
@@ -352,7 +344,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
                 @Override
                 public void handle(final Message<JsonObject> message) {
-                  checkForException(message);
                   fetchRelatedNodes(idOne, new Handler<Set<String>>() {
                     @Override
                     public void handle(Set<String> contents) {
@@ -394,7 +385,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
 
               @Override
               public void handle(Message<JsonObject> message) {
-                checkForException(message);
                 fetchTestNode(new Handler<String>() {
                   @Override
                   public void handle(final String nodeContent) {
@@ -416,12 +406,6 @@ public class Neo4jGraphTestClient extends TestClientBase {
         });
       }
     });
-  }
-
-  private void checkForException(Message<JsonObject> message) {
-    if (message.body.getString("exception") != null) {
-      tu.exception(new Exception(message.body.getString("exception")), "received exception message");
-    }
   }
 
   private void addTestNode(String content, final Handler<Long> handler) {

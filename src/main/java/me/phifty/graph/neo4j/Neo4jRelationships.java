@@ -25,7 +25,7 @@ public class Neo4jRelationships implements Relationships {
   }
 
   @Override
-  public void create(Object fromId, Object toId, String name, Map<String, Object> properties, Handler<Object> handler) {
+  public void create(Object fromId, Object toId, String name, Map<String, Object> properties, Handler<Object> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Node fromNode = finder.getNode(fromId);
@@ -39,14 +39,14 @@ public class Neo4jRelationships implements Relationships {
       handler.handle(relationship.getId());
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }
   }
 
   @Override
-  public void update(Object id, Map<String, Object> properties, Handler<Boolean> handler) {
+  public void update(Object id, Map<String, Object> properties, Handler<Boolean> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Relationship relationship = finder.getRelationship(id);
@@ -57,7 +57,7 @@ public class Neo4jRelationships implements Relationships {
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }
@@ -65,15 +65,11 @@ public class Neo4jRelationships implements Relationships {
 
   @Override
   public void fetch(Object id, Handler<Map<String, Object>> handler) {
-    try {
-      Relationship relationship = finder.getRelationship(id);
-      if (relationship == null) {
-        handler.handle(null);
-      } else {
-        handler.handle(PropertyHandler.getProperties(relationship));
-      }
-    } catch (Exception exception) {
-      handler.exception(exception);
+    Relationship relationship = finder.getRelationship(id);
+    if (relationship == null) {
+      handler.handle(null);
+    } else {
+      handler.handle(PropertyHandler.getProperties(relationship));
     }
   }
 
@@ -110,7 +106,7 @@ public class Neo4jRelationships implements Relationships {
   }
 
   @Override
-  public void remove(Object id, Handler<Boolean> handler) {
+  public void remove(Object id, Handler<Boolean> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       Relationship relationship = finder.getRelationship(id);
@@ -120,14 +116,14 @@ public class Neo4jRelationships implements Relationships {
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }
   }
 
   @Override
-  public void clear(Handler<Boolean> handler) {
+  public void clear(Handler<Boolean> handler) throws Exception {
     Transaction transaction = graphDatabaseService.beginTx();
     try {
       GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(graphDatabaseService);
@@ -139,7 +135,7 @@ public class Neo4jRelationships implements Relationships {
       handler.handle(true);
     } catch (Exception exception) {
       transaction.failure();
-      handler.exception(exception);
+      throw exception;
     } finally {
       transaction.finish();
     }

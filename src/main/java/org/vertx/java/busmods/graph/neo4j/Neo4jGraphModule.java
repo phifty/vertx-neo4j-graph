@@ -67,14 +67,9 @@ public class Neo4jGraphModule extends Verticle {
               public void handle(Boolean value) {
                 message.reply(Messages.done(true));
               }
-
-              @Override
-              public void exception(Exception exception) {
-                message.reply(Messages.fail(exception));
-              }
             });
           } catch (Exception exception) {
-            message.reply(Messages.fail(exception));
+            getContainer().getLogger().error("error while updating node", exception);
           }
         } else {
           try {
@@ -83,14 +78,9 @@ public class Neo4jGraphModule extends Verticle {
               public void handle(Object id) {
                 message.reply(Messages.id(id));
               }
-
-              @Override
-              public void exception(Exception exception) {
-                message.reply(Messages.fail(exception));
-              }
             });
           } catch (Exception exception) {
-            message.reply(Messages.fail(exception));
+            getContainer().getLogger().error("error while creating node", exception);
           }
         }
       }
@@ -104,21 +94,12 @@ public class Neo4jGraphModule extends Verticle {
       public void handle(final Message<JsonObject> message) {
         Object id = getIdIn(message.body);
 
-        try {
-          database.nodes().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
-            @Override
-            public void handle(Map<String, Object> node) {
-              message.reply(node == null ? null : Messages.properties(node));
-            }
-
-            @Override
-            public void exception(Exception exception) {
-              message.reply(Messages.fail(exception));
-            }
-          });
-        } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
-        }
+        database.nodes().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
+          @Override
+          public void handle(Map<String, Object> node) {
+            message.reply(node == null ? null : Messages.properties(node));
+          }
+        });
       }
     });
   }
@@ -135,14 +116,9 @@ public class Neo4jGraphModule extends Verticle {
             public void handle(Boolean value) {
               message.reply(Messages.done(true));
             }
-
-            @Override
-            public void exception(Exception exception) {
-              message.reply(Messages.fail(exception));
-            }
           });
         } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
+          getContainer().getLogger().error("error while removing node", exception);
         }
       }
     });
@@ -165,14 +141,9 @@ public class Neo4jGraphModule extends Verticle {
               public void handle(Boolean value) {
                 message.reply(Messages.done(true));
               }
-
-              @Override
-              public void exception(Exception exception) {
-                message.reply(Messages.fail(exception));
-              }
             });
           } catch (Exception exception) {
-            message.reply(Messages.fail(exception));
+            getContainer().getLogger().error("error while updating relationship", exception);
           }
         } else {
           Object fromId = getIdIn(message.body, "from");
@@ -184,14 +155,9 @@ public class Neo4jGraphModule extends Verticle {
               public void handle(Object id) {
                 message.reply(Messages.id(id));
               }
-
-              @Override
-              public void exception(Exception exception) {
-                message.reply(Messages.fail(exception));
-              }
             });
           } catch (Exception exception) {
-            message.reply(Messages.fail(exception));
+            getContainer().getLogger().error("error while creating relationship", exception);
           }
         }
       }
@@ -205,21 +171,12 @@ public class Neo4jGraphModule extends Verticle {
       public void handle(final Message<JsonObject> message) {
         Object id = getIdIn(message.body);
 
-        try {
-          database.relationships().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
-            @Override
-            public void handle(Map<String, Object> node) {
-              message.reply(node == null ? null : Messages.properties(node));
-            }
-
-            @Override
-            public void exception(Exception exception) {
-              message.reply(Messages.fail(exception));
-            }
-          });
-        } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
-        }
+        database.relationships().fetch(id, new me.phifty.graph.Handler<Map<String, Object>>() {
+          @Override
+          public void handle(Map<String, Object> node) {
+            message.reply(node == null ? null : Messages.properties(node));
+          }
+        });
       }
     });
   }
@@ -233,21 +190,12 @@ public class Neo4jGraphModule extends Verticle {
         String name = message.body.getString("name");
         String direction = message.body.getString("direction");
 
-        try {
-          database.relationships().fetchAllOfNode(nodeId, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
-            @Override
-            public void handle(Iterable<Map<String, Object>> relationships) {
-              message.reply(Messages.relationships(relationships));
-            }
-
-            @Override
-            public void exception(Exception exception) {
-              message.reply(Messages.fail(exception));
-            }
-          });
-        } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
-        }
+        database.relationships().fetchAllOfNode(nodeId, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
+          @Override
+          public void handle(Iterable<Map<String, Object>> relationships) {
+            message.reply(Messages.relationships(relationships));
+          }
+        });
       }
     });
   }
@@ -264,14 +212,9 @@ public class Neo4jGraphModule extends Verticle {
             public void handle(Boolean value) {
               message.reply(Messages.done(true));
             }
-
-            @Override
-            public void exception(Exception exception) {
-              message.reply(Messages.fail(exception));
-            }
           });
         } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
+          getContainer().getLogger().error("error while removing relationship", exception);
         }
       }
     });
@@ -285,21 +228,12 @@ public class Neo4jGraphModule extends Verticle {
         String name = message.body.getString("name");
         String direction = message.body.getString("direction");
 
-        try {
-          database.complex().fetchAllRelatedNodes(nodeId, name, direction, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
-            @Override
-            public void handle(Iterable<Map<String, Object>> nodes) {
-              message.reply(Messages.nodes(nodes));
-            }
-
-            @Override
-            public void exception(Exception exception) {
-              message.reply(Messages.fail(exception));
-            }
-          });
-        } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
-        }
+        database.complex().fetchAllRelatedNodes(nodeId, name, direction, new me.phifty.graph.Handler<Iterable<Map<String, Object>>>() {
+          @Override
+          public void handle(Iterable<Map<String, Object>> nodes) {
+            message.reply(Messages.nodes(nodes));
+          }
+        });
       }
     });
 
@@ -324,14 +258,9 @@ public class Neo4jGraphModule extends Verticle {
               public void handle(ComplexResetNodeRelationshipsResult value) {
                 message.reply(Messages.resetNodeRelationships(value));
               }
-
-              @Override
-              public void exception(Exception exception) {
-                message.reply(Messages.fail(exception));
-              }
             });
         } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
+          getContainer().getLogger().error("error while resetting node relationships", exception);
         }
       }
     });
@@ -347,21 +276,12 @@ public class Neo4jGraphModule extends Verticle {
             public void handle(Boolean value) {
               message.reply(Messages.done(true));
             }
-
-            @Override
-            public void exception(Exception exception) {
-              message.reply(Messages.fail(exception));
-            }
           });
         } catch (Exception exception) {
-          message.reply(Messages.fail(exception));
+          getContainer().getLogger().error("error while clearing graph", exception);
         }
       }
     });
-  }
-
-  private Set<Object> getIdsIn(JsonObject body) {
-    return getIdsIn(body, "ids");
   }
 
   private Set<Object> getIdsIn(JsonObject body, String field) {

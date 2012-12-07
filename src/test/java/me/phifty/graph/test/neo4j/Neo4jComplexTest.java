@@ -46,7 +46,7 @@ public class Neo4jComplexTest {
   }
 
   @Test
-  public void testFetchAllRelatedNodes() {
+  public void testFetchAllRelatedNodes() throws Exception {
     addTestRelationship();
 
     graph.complex().fetchAllRelatedNodes(fromNodeId, "connected", "outgoing", nodesHandler);
@@ -59,7 +59,7 @@ public class Neo4jComplexTest {
   }
 
   @Test
-  public void testResetNodeRelationships() {
+  public void testResetNodeRelationships() throws Exception {
     Object id = addTestNode();
     Object targetIdOne = addTestNode();
     Object targetIdTwo = addTestNode();
@@ -92,13 +92,13 @@ public class Neo4jComplexTest {
     Assert.assertTrue(relationshipsHandler.getValue().iterator().hasNext());
   }
 
-  private Object addTestNode() {
+  private Object addTestNode() throws Exception {
     properties = Fixtures.testNode();
     graph.nodes().create(properties, idHandler);
     return currentNodeId();
   }
 
-  private Object addTestRelationship() {
+  private Object addTestRelationship() throws Exception {
     fromNodeId = addTestNode();
     toNodeId = addTestNode();
     properties = Fixtures.testRelationship();

@@ -40,7 +40,7 @@ public class Neo4jNodesTest {
   }
 
   @Test
-  public void testCreateNode() {
+  public void testCreateNode() throws Exception {
     properties = Fixtures.testNode();
 
     graph.nodes().create(properties, idHandler);
@@ -51,7 +51,7 @@ public class Neo4jNodesTest {
   }
 
   @Test
-  public void testUpdateNode() {
+  public void testUpdateNode() throws Exception {
     Object id = addTestNode();
 
     properties = Fixtures.updatedTestNode();
@@ -63,7 +63,7 @@ public class Neo4jNodesTest {
   }
 
   @Test
-  public void testFetchNode() {
+  public void testFetchNode() throws Exception {
     Object id = addTestNode();
 
     graph.nodes().fetch(id, nodeHandler);
@@ -71,7 +71,7 @@ public class Neo4jNodesTest {
   }
 
   @Test
-  public void testRemoveNode() {
+  public void testRemoveNode() throws Exception {
     Object id = addTestNode();
 
     graph.nodes().remove(id, doneHandler);
@@ -81,7 +81,7 @@ public class Neo4jNodesTest {
     Assert.assertNull(nodeHandler.getValue());
   }
 
-  private Object addTestNode() {
+  private Object addTestNode() throws Exception {
     properties = Fixtures.testNode();
     graph.nodes().create(properties, idHandler);
     return currentNodeId();
