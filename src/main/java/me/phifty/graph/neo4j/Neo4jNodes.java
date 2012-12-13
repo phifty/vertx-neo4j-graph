@@ -5,7 +5,6 @@ import me.phifty.graph.Nodes;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.Map;
 
@@ -70,24 +69,6 @@ public class Neo4jNodes implements Nodes {
     try {
       Node node = finder.getNode(id);
       node.delete();
-      transaction.success();
-      handler.handle(true);
-    } catch (Exception exception) {
-      transaction.failure();
-      throw exception;
-    } finally {
-      transaction.finish();
-    }
-  }
-
-  @Override
-  public void clear(Handler<Boolean> handler) throws Exception {
-    Transaction transaction = graphDatabaseService.beginTx();
-    try {
-      GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(graphDatabaseService);
-      for (Node node : globalGraphOperations.getAllNodes()) {
-        node.delete();
-      }
       transaction.success();
       handler.handle(true);
     } catch (Exception exception) {

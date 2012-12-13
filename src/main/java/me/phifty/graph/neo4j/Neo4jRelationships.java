@@ -3,10 +3,8 @@ package me.phifty.graph.neo4j;
 import me.phifty.graph.Handler;
 import me.phifty.graph.Relationships;
 import org.neo4j.graphdb.*;
-import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -111,25 +109,6 @@ public class Neo4jRelationships implements Relationships {
     try {
       Relationship relationship = finder.getRelationship(id);
       relationship.delete();
-      transaction.success();
-
-      handler.handle(true);
-    } catch (Exception exception) {
-      transaction.failure();
-      throw exception;
-    } finally {
-      transaction.finish();
-    }
-  }
-
-  @Override
-  public void clear(Handler<Boolean> handler) throws Exception {
-    Transaction transaction = graphDatabaseService.beginTx();
-    try {
-      GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(graphDatabaseService);
-      for (Relationship relationship : globalGraphOperations.getAllRelationships()) {
-        relationship.delete();
-      }
       transaction.success();
 
       handler.handle(true);

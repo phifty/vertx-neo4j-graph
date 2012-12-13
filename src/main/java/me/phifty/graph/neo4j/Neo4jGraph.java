@@ -2,6 +2,10 @@ package me.phifty.graph.neo4j;
 
 import me.phifty.graph.*;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 /**
  * @author phifty <b.phifty@gmail.com>
@@ -56,21 +60,25 @@ public class Neo4jGraph implements Graph {
 
   @Override
   public void clear(final Handler<Boolean> handler) throws Exception {
-    relationships().clear(new Handler<Boolean>() {
-      @Override
-      public void handle(final Boolean relationshipsDeleted) {
-        try {
-          nodes().clear(new Handler<Boolean>() {
-            @Override
-            public void handle(Boolean nodesDeleted) {
-              handler.handle(nodesDeleted && relationshipsDeleted);
-            }
-          });
-        } catch (Exception exception) {
-          exception.printStackTrace();
-        }
+    GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(graphDatabaseService);
+    Transaction transaction = graphDatabaseService.beginTx();
+    try {
+      for (Relationship relationship : globalGraphOperations.getAllRelationships()) {
+        relationship.delete();
       }
-    });
+
+      for (Node node : globalGraphOperations.getAllNodes()) {
+        node.delete();
+      }
+
+      transaction.success();
+      handler.handle(true);
+    } catch (Exception exception) {
+      transaction.failure();
+      throw exception;
+    } finally {
+      transaction.finish();
+    }
   }
 
   @Override

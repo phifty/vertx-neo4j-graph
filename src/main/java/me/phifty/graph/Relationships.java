@@ -17,6 +17,4 @@ public interface Relationships {
 
   public void remove(Object id, Handler<Boolean> handler) throws Exception;
 
-  public void clear(Handler<Boolean> handler) throws Exception;
-
 }
