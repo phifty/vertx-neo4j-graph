@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/DECORATION/1.3.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.3.0 http://maven.apache.org/xsd/decoration-1.3.0.xsd"
+         name="neo4vertx">
+
+    <version position="none"/>
+    <publishDate position="none"/>
+
+    <bannerLeft>
+        <src>neo4vertx_small.png</src>
+    </bannerLeft>
+
+    <skin>
+        <groupId>lt.velykis.maven.skins</groupId>
+        <artifactId>reflow-maven-skin</artifactId>
+        <version>1.1.1</version>
+    </skin>
+
+    <custom>
+        <reflowSkin>
+            <theme>bootswatch-spacelab</theme>
+            <highlightJs>true</highlightJs>
+            <brand>
+                <name>neo4vertx</name>
+                <href>index.html</href>
+            </brand>
+            <slogan>Bridging the gap between Vert.x and Neo4j</slogan>
+            <toc>sidebar</toc>
+            <topNav>Intro|Documentation|Examples|Github</topNav>
+            <bottomNav maxSpan="12">
+                <column>Intro</column>
+                <column>Project Info</column>
+                <column>Documentation</column>
+                <column>Examples</column>
+                <column>Downloads|downloads</column>
+            </bottomNav>
+            <pages>
+                <maven>
+                    <toc>false</toc>
+                </maven>
+                <index project="neo4vertx-doc">
+                    <shortTitle>Welcome</shortTitle>
+                    <breadcrumbs>false</breadcrumbs>
+                    <toc>false</toc>
+                    <sections>
+                        <body/>
+                        <sidebar/>
+                        <thumbs>2</thumbs>
+                        <columns>3</columns>
+                    </sections>
+                </index>
+            </pages>
+        </reflowSkin>
+    </custom>
+
+    <body>
+        <head>
+            <link rel="shortcut icon" href="favicon.gif" type="image/x-icon"/>
+        </head>
+
+        <menu name="Intro">
+            <item name="Home" href="index.html"></item>
+            <item name="Downloads" href="downloads.html"></item>
+            <item name="Maven" href="maven.html"></item>
+        </menu>
+        <menu name="Project Info">
+            <item name="Changelog" href="changelog.html"></item>
+            <item name="Contributing" href="contributing.html"></item>
+            <item name="Github" href="${gh-url}"></item>
+            <item name="Todos" href="todos.html"></item>
+        </menu>
+        <menu name="Documentation">
+            <item name="Configuration" href="configuration.html"></item>
+            <item name="JavaDoc" href="javadoc/index.html"></item>
+        </menu>
+        <menu name="Examples">
+            <!-- The JavaScript example is currently outdated
+            <item name="JavaScript" href="example_javascript.html"></item>
+             -->
+            <item name="Java examples" href="java_examples.html"></item>
+        </menu>
+
+    </body>
+</project>

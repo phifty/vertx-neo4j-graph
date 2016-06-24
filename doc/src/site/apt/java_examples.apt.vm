@@ -1,0 +1,42 @@
+    ------
+    neo4vertx Java Examples
+    ------
+    Johannes Schüth
+    ------
+    2014-11-19
+
+
+Intro
+
+  The example classes can be found in the {{{${gh-url}/examples/java/src/main/java/org/openpcf/neo4vertx/examples}neo4vertx-java-examples}} module.
+
+  Each example class contains a main method. Which means each verticle can directly be started. Once started a http server will listen to incoming requests. 
+
+  The http server will store data in the neo4j database and count the stored nodes for each request.  
+
+%{include|source=doc/target/examples/neo4vertx-examples/java/src/main/java/org/openpcf/neo4vertx/examples/AbstractDemoVerticle.java|snippet=#startHttpServer}
+
+  The main means to communicate with the neo4j is the event bus. 
+  The <<<storeNode()>>> method will send a simple create cypher statement to the event bus. 
+  Neo4Vertx will handle this message and execute the query. 
+  There are also more complex means possible to interface with the neo4j which we will cover in the advanded example. 
+
+%{include|source=doc/target/examples/neo4vertx-examples/java/src/main/java/org/openpcf/neo4vertx/examples/AbstractDemoVerticle.java|snippet=#storeNode}
+  
+  The <<<countData()>>> method will query the neo4j for the amount of nodes.
+
+%{include|source=doc/target/examples/neo4vertx-examples/java/src/main/java/org/openpcf/neo4vertx/examples/AbstractDemoVerticle.java|snippet=#countData}
+  
+  EventHandler are used to handle the replies from the neo4j database.
+
+ Examples:
+
+  * {{{./java_example_simple.html}Simple Example}} - This example starts neo4j in the embedded database mode. 
+
+  * {{{./java_example_cluster.html}Cluster Example}} - This example shows how to use neo4vertx in its cluster mode.
+
+  * {{{./java_example_remote-gui.html}Remote/GUI Example}} - This example also enables the neo4j gui server on port 7474.
+
+  * {{{./java_example_advanced.html}Advanced Example}} - This example shows how to access the most low level neo4j API.
+
+  * {{{./java_example_web-rest.html}Web REST}} - Vert.x Web REST API which uses the neo4j to store and retrieve data.

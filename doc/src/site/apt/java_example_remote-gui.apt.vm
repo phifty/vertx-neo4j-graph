@@ -1,0 +1,17 @@
+    ------
+    neo4vertx Java GUI/Remote Example
+    ------
+    Johannes Schüth
+    ------
+    2014-11-19
+
+
+Java GUI/Remote Example
+
+  The {{{${gh-url}/examples/java/src/main/java/org/openpcf/neo4vertx/examples/GUIDemoVerticle.java}GUIDemoVerticle}} and {{{${gh-url}/examples/java/src/main/java/org/openpcf/neo4vertx/examples/RemoteDemoVerticle.java}RemoteDemoVerticle}} can be used together to demonstrate the remote api capability.
+  
+  It is possible to use neo4vertx together with an external neo4j database. In this case a <<<restUrl>>> parameter has to be specified. Neo4Vertx will not startup any neo4j embedded database when run in remote mode. 
+  It is also not possible to use the advanced features when in this mode. The gui mode on the other hand will startup an embedded neo4j database and in addition a jetty server which provides a neo4j rest api on port 7474. 
+
+  It is best to startup the GUIDemoVerticle first since it will startup a neo4j with a rest api backend on port 7474. 
+  The remote example verticle can be started afterwards. The remote example will than execute queries using a simple embedded rest client.

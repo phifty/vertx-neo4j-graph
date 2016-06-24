@@ -1,0 +1,14 @@
+    ------
+    neo4vertx Java Simple Example
+    ------
+    Johannes Schüth
+    ------
+    2014-11-19
+
+
+Java Simple Example
+
+  The {{{${gh-url}/examples/java/src/main/java/org/openpcf/neo4vertx/examples/SimpleDemoVerticle.java}SimpleDemoVerticle}} examples demonstrates how to use neo4vertx in conjunction with java in its default mode. 
+  By default neo4vertx will startup an embedded neo4j server.
+  
+%{include|source=doc/target/examples/neo4vertx-examples/java/src/main/java/org/openpcf/neo4vertx/examples/SimpleDemoVerticle.java|snippet=AJ:..start()}

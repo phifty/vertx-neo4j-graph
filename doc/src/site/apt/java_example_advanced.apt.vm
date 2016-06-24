@@ -1,0 +1,15 @@
+    ------
+    neo4vertx Advanced Java Example
+    ------
+    Johannes Schüth
+    ------
+    2014-11-19
+
+
+Advanced Java Example
+
+  The {{{${gh-url}/examples/java/src/main/java/org/openpcf/neo4vertx/examples/AdvancedDemoVerticle.java}AdvancedDemoVerticle}} example shows how to access the neo4j graph database directly though java without using the event bus. It is possible to get the neo4j graph database service by calling <<<Neo4jGraphVerticle.getDatabase()>>>.
+
+  The runnable contains a simple request handler that will add a dummy node to the neo4j graph.  
+
+%{include|source=doc/target/examples/neo4vertx-examples/java/src/main/java/org/openpcf/neo4vertx/examples/AdvancedDemoVerticle.java|snippet=AJ:..start()}

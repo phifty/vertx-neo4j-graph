@@ -1,0 +1,10 @@
+{
+  "mode": "cluster",
+  "baseAddress": "graph",
+  "path": "/tmp/graph-master",
+  "ha.server": "localhost:6001",
+  "ha.slave_only": "false",
+  "ha.cluster_server": "localhost:5001",
+  "ha.initial_hosts": "localhost:5001,localhost:5002",
+  "ha.server_id": "1"
+}

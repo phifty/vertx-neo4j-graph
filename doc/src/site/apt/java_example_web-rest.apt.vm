@@ -1,0 +1,55 @@
+    ------
+    neo4vertx Java Vert.x Web REST Example
+    ------
+    Johannes Schüth
+    ------
+    2014-11-19
+
+
+Java Vert.x Web REST Example
+
+  This example covers the steps that are needed to get started with vert.x 3 and create a RESTful service which is backed by Neo4j.
+  
+  Components which are used:
+
+  * Vert.x 3 - Application platform
+
+  * Vert.x Web - Swiss Army Knife for building modern, scalable, web apps similar to Yoke or expressjs.
+
+  * Neo4vertx - Extension that enables neo4j access
+
+
+Setup
+
+  Create a new maven project and add the listed dependencies. Make sure to set you compiler plugin to 1.8 as shown below. Vert.x 3 requires Java 8.  
+
+%{include|source=doc/target/examples/neo4vertx-examples/java-web-rest/pom.xml}
+
+  The example consists of just two classes.
+  The {{{${gh-url}/examples/java-web-rest/src/main/java/org/openpcf/neo4vertx/example/Runner.java}Runner}} is responsible for verticle deployment and setup of neo4vertx. 
+
+%{include|source=doc/target/examples/neo4vertx-examples/java-web-rest/src/main/java/org/openpcf/neo4vertx/example/Runner.java}
+
+  The {{{${gh-url}/examples/java-web-rest/src/main/java/org/openpcf/neo4vertx/example/DemoVerticle.java}DemoVerticle}} will start the http server and setup the REST endpoints.
+
+%{include|source=doc/target/examples/neo4vertx-examples/java-web-rest/src/main/java/org/openpcf/neo4vertx/example/DemoVerticle.java}
+
+  The start() method contains the code that is responsible for the setup of the http server and the routing of the various REST endpoints.
+  Please note that you can start the vertx HttpServer in any verticle you deploy. The httpserver is shared across your verticles.
+  The router functionality is part of the vertx-web project. Routers and routes allows the convenient creation REST endpoint handlers.
+
+%{include|source=doc/target/examples/neo4vertx-examples/java-web-rest/src/main/java/org/openpcf/neo4vertx/example/DemoVerticle.java|snippet=#start}
+
+  Once the <<<Runner>>> class has been executed various urls can be accessed in order to interact with the DemoVerticle.
+
+Service URLs
+
+  * {{http://localhost:8080/api/v1/demo/clear}}
+
+  * {{http://localhost:8080/api/v1/demo/addFlower}}
+
+  * {{http://localhost:8080/api/v1/demo/insert}}
+
+  * {{http://localhost:8080/api/v1/demo/count}}
+
+  * {{http://localhost:7474/browser}}

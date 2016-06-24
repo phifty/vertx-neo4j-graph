@@ -1,0 +1,11 @@
+# Maven
+
+You can add the __neo4vertx-core__ dependency to you project to include neo4vertx.
+
+```
+<dependency>
+    <artifactId>neo4vertx-core</artifactId>
+    <groupId>${project.groupId}</groupId>
+    <version>${project.version}</version>
+</dependency>
+```

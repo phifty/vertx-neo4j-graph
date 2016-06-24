@@ -1,0 +1,5 @@
+{
+  "mode": "remote",
+  "restUrl": "http://localhost:7474/db/data/cypher",
+  "baseAddress": "graph"
+}

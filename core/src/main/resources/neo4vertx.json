@@ -1,0 +1,5 @@
+{
+  "mode": "default",
+  "path": "/tmp/graph",
+  "baseAddress": "neo4j-graph"
+}

@@ -1,0 +1,12 @@
+    ------
+    neo4vertx Java Cluster Example
+    ------
+    Johannes Schüth
+    ------
+    2014-11-19
+
+
+Java Cluster Example
+
+  The {{{${gh-url}/examples/java/src/main/java/org/openpcf/neo4vertx/examples/ClusterDemoMasterVerticle.java}ClusterDemoMasterVerticle}} and {{{${gh-url}/examples/java/src/main/java/org/openpcf/neo4vertx/examples/ClusterDemoSlaveVerticle.java}ClusterDemoSlaveVerticle}} examples demonstrate how the neo4j master slave mode can be setup in order to run neo4j in its high availability mode.
+  Startup both verticles and invoke http requests to each of the verticle http servers. Nodes that are created though the slave will also be accessible by the master verticle.
