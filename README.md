@@ -4,7 +4,7 @@ Vert.x extension to read and write a Neo4J graph database.
 
 # Info.
 
-This extension was made by Philip Brüll and further expanded upon by
+This extension was made by Philipp Brüll and further expanded upon by
 Rubin Simons and Johannes Schüth. It currently (June 2016) is somewhat
 obsolete, but made available for future reference.
 
